@@ -1,0 +1,979 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>vecEspresso Examples</title>
+<meta name="generator" content="MATLAB 25.2">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2026-01-28">
+<meta name="DC.source" content="vecEspresso_doc.m">
+<style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="content">
+<h1>
+<tt>vecEspresso</tt> Examples</h1>
+<!--introduction-->
+<p>The function <tt>vecEspresso</tt> is a wrapper of the function <tt>matEspresso</tt> (itself a wrapper of <tt>Espresso</tt> executable). It provides drop-in compatibility with the <tt>minTruthtable</tt> function (FEX 37118) while leveraging <tt>Espresso</tt>'s superior performance on large problems.</p>
+<p>
+<tt>vecEspresso</tt> accepts a truth-vector (a vector representing all possible combinations of Boolean variables) and returns minimized covering patterns. This interface matches <tt>minTruthtable</tt>'s core functionality while using a more efficient minimization algorithm.</p>
+<p>Refer to the <tt>matEspresso</tt> documentation for details on obtaining, installing, and configuring the <tt>Espresso</tt> executable.</p>
+<!--/introduction-->
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#1">Terminology</a>
+</li>
+<li>
+<a href="#2">Truth-Vector Format</a>
+</li>
+<li>
+<a href="#3">Input: Text</a>
+</li>
+<li>
+<a href="#4">Input: Numeric or Logical</a>
+</li>
+<li>
+<a href="#5">Don't-Care Values</a>
+</li>
+<li>
+<a href="#6">Don't-Care Preservation</a>
+</li>
+<li>
+<a href="#7">Larger Truth-Vectors</a>
+</li>
+<li>
+<a href="#8">Using Espresso Options</a>
+</li>
+<li>
+<a href="#9">No-Output Display Mode</a>
+</li>
+<li>
+<a href="#10">Output 1: <tt>Bins</tt></a>
+</li>
+<li>
+<a href="#11">Output 2: <tt>inps</tt></a>
+</li>
+<li>
+<a href="#12">Output 3: <tt>Nums</tt></a>
+</li>
+<li>
+<a href="#13">Output 4: <tt>ott</tt></a>
+</li>
+<li>
+<a href="#14">Output 5: <tt>expr</tt></a>
+</li>
+<li>
+<a href="#15">Output 6: <tt>debug</tt></a>
+</li>
+<li>
+<a href="#16">Interesting Edge-Cases</a>
+</li>
+<li>
+<a href="#17">Espresso vs. Quine-McCluskey</a>
+</li>
+<li>
+<a href="#18"><tt>minTruthtable</tt> Compatibility</a>
+</li>
+<li>
+<a href="#19">When Results Differ from <tt>minTruthtable</tt></a>
+</li>
+<li>
+<a href="#20">Example: Large Truth-Table Performance</a>
+</li>
+</ul>
+</div>
+<h2 id="1">Terminology</h2>
+<p>Terms commonly used in PLA contexts are easily confused with existing terms used in MATLAB that have very different meanings. For that reason we define the following two universal terms in place of the confusing ones:</p>
+<div>
+<ul>
+<li>
+<b>"independent-variable"</b> aka input, variable, argument, premise, predicate, condition, domain variable, input signal, etc.</li>
+<li>
+<b>"dependent-variable"</b> aka output, function, function value, consequent, result, response, target variable, output signal, etc.</li>
+</ul>
+</div>
+<h2 id="2">Truth-Vector Format</h2>
+<p>A truth-vector is a row vector of length <img src="vecEspresso_doc_eq18347343706772467662.png" alt="$2^N$" style="width:16px;height:13px;"> that specifies which binary numbers return TRUE for a Boolean function with <img src="vecEspresso_doc_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;"> independent- variables. Position <img src="vecEspresso_doc_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;"> in the vector gives the dependent-variable value (true/false,DC) when the independent-variables are the binary number <img src="vecEspresso_doc_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;"> written using exactly those <img src="vecEspresso_doc_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;"> bits, e.g. k=2 -&gt; 10 (2 bits).</p>
+<p>For example, a 4-element truth-vector has 2-bits/independent-variables:</p>
+<pre class="language-matlab">tt = <span class="string">'1010'</span>                                  tt
+</pre>
+<pre class="language-matlab">Position <span class="string">0</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">00</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">true</span>  <span class="string">'1'</span>
+Position <span class="string">1</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">01</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">false</span> <span class="string">'0'</span>
+Position <span class="string">2</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">10</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">true</span>  <span class="string">'1'</span>
+Position <span class="string">3</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">11</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">false</span> <span class="string">'0'</span>
+</pre>
+<p>Note that <tt>minTruthtable</tt> uses the convention that the binary first column (leftmost) is the most significant bit, i.e. MSB -&gt; LSB. For example, a 3-independent-variable function with variables A, B, C:</p>
+<div>
+<ul>
+<li>Column order in patterns: C B A (left to right)</li>
+<li>Binary counting: 0=000, 1=001, 2=010, 3=011, 4=100, ... k=MSB:LSB ...</li>
+</ul>
+</div>
+<h2 id="3">Input: Text</h2>
+<p>The truth-vector may be a character vector or a string scalar, the permitted characters are:</p>
+<pre>  false: '0'
+   true: '1'
+     DC: '2' == '-' == '?'</pre>
+<p>The four outputs are explained in detail below, and here briefly:</p>
+<div>
+<ul>
+<li>
+<tt>Bins</tt>: covering patterns</li>
+<li>
+<tt>inps</tt>: number of logic gate inputs needed for implementation</li>
+<li>
+<tt>Nums</tt>: which truth-table positions each pattern covers (0-indexed)</li>
+<li>
+<tt>ott</tt>: minimized output truth-vector</li>
+</ul>
+</div>
+<p>For example, a 2-independent-variable function that is true at positions 1 and 3:</p>
+<pre class="codeinput">[Bins,inps,Nums,ott] = vecEspresso(<span class="string">'0101'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+    '-1'
+inps =
+     0
+Nums =
+  1&times;1 cell array
+    {[1 3]}
+ott =
+    '0101'
+</pre>
+<h2 id="4">Input: Numeric or Logical</h2>
+<p>Numeric and logical vectors are accepted using these values:</p>
+<pre>  false: 0 == false
+   true: 1 == true
+     DC: 2</pre>
+<p>For example, a 2-independent-variable function that is true at positions 1 and 3:</p>
+<pre class="codeinput">[BinsN,inpsN,NumsN,ottN] = vecEspresso([0,1,0,1])
+[BinsL,inpsL,NumsL,ottL] = vecEspresso([false,true,false,true])
+</pre>
+<pre class="codeoutput">BinsN =
+  1&times;2 uint8 row vector
+   2   1
+inpsN =
+     0
+NumsN =
+  1&times;1 cell array
+    {[1 3]}
+ottN =
+  1&times;4 uint8 row vector
+   0   1   0   1
+BinsL =
+  1&times;2 uint8 row vector
+   2   1
+inpsL =
+     0
+NumsL =
+  1&times;1 cell array
+    {[1 3]}
+ottL =
+  1&times;4 uint8 row vector
+   0   1   0   1
+</pre>
+<h2 id="5">Don't-Care Values</h2>
+<p>Don't-care (DC) values indicate positions where the function value is unspecified and can be chosen to simplify the minimization. By default, <tt>vecEspresso</tt> consumes don't-cares during minimization.</p>
+<p>In this example the output <tt>ott</tt> has consumed the don't-cares (positions 2 and 3) by setting them to '0' to create a simpler covering pattern:</p>
+<pre class="codeinput">[Bins,inps,Nums,ott] = vecEspresso(<span class="string">'01--'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+    '01'
+inps =
+     2
+Nums =
+  1&times;1 cell array
+    {[1]}
+ott =
+    '0100'
+</pre>
+<h2 id="6">Don't-Care Preservation</h2>
+<p>The <tt>preserveDC</tt> option controls whether don't-cares are consumed or preserved in the output truth-vector. Use <tt>preserveDC=true</tt> when you need to distinguish between "known false" and "unspecified", such as when iteratively refining a truth table or when documenting which don't-cares were actually used in minimization.</p>
+<p>In this example <tt>ott</tt> preserves the original don't-care positions, only updating positions that are actually covered by the minimization:</p>
+<pre class="codeinput">[Bins,inps,Nums,ott] = vecEspresso(<span class="string">'01--'</span>, <span class="string">'preserveDC'</span>,true)
+</pre>
+<pre class="codeoutput">Bins =
+    '01'
+inps =
+     2
+Nums =
+  1&times;1 cell array
+    {[1]}
+ott =
+    '01--'
+</pre>
+<h2 id="7">Larger Truth-Vectors</h2>
+<p>
+<tt>vecEspresso</tt> supports larger truth-vectors compared to <tt>minTruthtable</tt>, making it suitable for problems with many independent-variables. For example, 4-independent-variables:</p>
+<pre class="codeinput">[Bins,inps,Nums,ott] = vecEspresso(<span class="string">'0000100110001000'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+  3&times;4 char array
+    '0111'
+    '1-00'
+    '-100'
+inps =
+    13
+Nums =
+  3&times;1 cell array
+    {[   7]}
+    {[8 12]}
+    {[4 12]}
+ott =
+    '0000100110001000'
+</pre>
+<h2 id="8">Using Espresso Options</h2>
+<p>All remaining options are passed directly to <tt>matEspresso</tt>, please see the <tt>matEspresso</tt> documentation for complete option descriptions. For example, to use exact minimization (slower but guaranteed optimal):</p>
+<pre class="codeinput">[Bins,inps,Nums,ott] = vecEspresso(<span class="string">'0101'</span>, <span class="string">'Dexact'</span>,true)
+</pre>
+<pre class="codeoutput">Bins =
+    '-1'
+inps =
+     0
+Nums =
+  1&times;1 cell array
+    {[1 3]}
+ott =
+    '0101'
+</pre>
+<h2 id="9">No-Output Display Mode</h2>
+<p>When called without output arguments, <tt>vecEspresso</tt> displays a formatted summary including a Karnaugh map (for 3-4 independent-variables), all covering terms, the Boolean expression, and statistics:</p>
+<pre class="codeinput">vecEspresso(<span class="string">'01011010'</span>)
+</pre>
+<pre class="codeoutput">| Karnaugh map (index to left, -:unused don't-care, =:used don't-care):
+|  /  0  1  3  2 \ |  / . 1 1 . \
+|  \  4  5  7  6 / |  \ 1 . . 1 /
+| All terms:
+| * T( 1): "1-0" &lt;-&gt; {4 6}
+| * T( 2): "0-1" &lt;-&gt; {1 3}
+|
+| Z = (A &amp; ~C) | (~A &amp; C);
+|
+| Logical complexity: 6 inputs
+|
+| Input  tt: "01011010"
+| Output tt: "01011010"
+</pre>
+<h2 id="10">Output 1: <tt>Bins</tt>
+</h2>
+<p>The <tt>Bins</tt> output contains the covering patterns as a character matrix (for char/string input) or <tt>uint8</tt> matrix (for numeric/logical input). Each row represents one product term in the minimized expression.</p>
+<p>The values in <tt>Bins</tt> are:</p>
+<div>
+<ul>
+<li>
+<tt>'0'</tt> or 0: independent-variable must be false</li>
+<li>
+<tt>'1'</tt> or 1: independent-variable must be true</li>
+<li>
+<tt>'-'</tt> or 2: don't-care (independent-variable is not constrained)</li>
+</ul>
+</div>
+<p>The column order follows <tt>minTruthtable</tt> convention where column 1 is the most significant independent-variable (i.e. MSB of the binary number). For a 4-independent-variable function:</p>
+<pre class="language-matlab">Name:    D  C  <span class="string">B</span>  <span class="string">A</span>
+Column:  1  2  3  4
+</pre>
+<pre class="language-matlab">Pattern: <span class="string">'1010'</span> -&gt; D=1, C=0, B=1, A=0.
+</pre>
+<pre class="codeinput">Bins = vecEspresso(<span class="string">'0000111100110011'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+  2&times;4 char array
+    '01--'
+    '1-1-'
+</pre>
+<h2 id="11">Output 2: <tt>inps</tt>
+</h2>
+<p>The <tt>inps</tt> output estimates the number of logic gate inputs required for a sum-of-products implementation. To provide a rough measure of PLA-circuit implementation complexity it counts:</p>
+<div>
+<ul>
+<li>The number of literals in each product term (ignoring single-literal terms)</li>
+<li>One input per product term for the final OR gate (if multiple terms exist)</li>
+</ul>
+</div>
+<p>This metric helps estimate the hardware cost or implementation complexity. Lower <tt>inps</tt> values indicate simpler logic circuits requiring fewer gates.</p>
+<p>In this example, pattern '011' has 3 literals, pattern '1-0' has 2 literals, and with 2 patterns we need a 2-input OR gate, giving inps=7 (3 + 2 + 2):</p>
+<pre class="codeinput">[Bins,inps] = vecEspresso(<span class="string">'00011010'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+  2&times;3 char array
+    '011'
+    '1-0'
+inps =
+     7
+</pre>
+<h2 id="12">Output 3: <tt>Nums</tt>
+</h2>
+<p>The <tt>Nums</tt> output is a cell array where each cell Nums{k} corresponds to row k in <tt>Bins</tt>, showing which 0-indexed truth-table positions that pattern covers. This connection between patterns and covered positions is useful for:</p>
+<div>
+<ul>
+<li>Verifying complete coverage of all true positions</li>
+<li>Understanding which input combinations activate each term</li>
+<li>Debugging unexpected minimization results</li>
+</ul>
+</div>
+<p>In this example, the pattern '1-' covers truth-table positions 2 and 3 (0-indexed), so Nums{1} = [2,3]:</p>
+<pre class="codeinput">[Bins,inps,Nums] = vecEspresso(<span class="string">'0011'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+    '1-'
+inps =
+     0
+Nums =
+  1&times;1 cell array
+    {[2 3]}
+</pre>
+<h2 id="13">Output 4: <tt>ott</tt>
+</h2>
+<p>The <tt>ott</tt> output is the reconstructed truth-vector showing which positions are covered by the minimized expression. By default, don't-cares are consumed (set to '0' or '1'):</p>
+<pre class="codeinput">[Bins,inps,Nums,ott] = vecEspresso(<span class="string">'01--1001'</span>)
+</pre>
+<pre class="codeoutput">Bins =
+  3&times;3 char array
+    '100'
+    '001'
+    '111'
+inps =
+    12
+Nums =
+  3&times;1 cell array
+    {[4]}
+    {[1]}
+    {[7]}
+ott =
+    '01001001'
+</pre>
+<h2 id="14">Output 5: <tt>expr</tt>
+</h2>
+<p>A character vector containing one Boolean expression per dependent-variable, separated by newlines (see <tt>matEspresso</tt>):</p>
+<pre class="codeinput">[~,~,~,~,expr] = vecEspresso(<span class="string">'01--1001'</span>)
+</pre>
+<pre class="codeoutput">expr =
+    'Z = (A &amp; ~B &amp; ~C) | (~A &amp; ~B &amp; C) | (A &amp; B &amp; C)'
+</pre>
+<h2 id="15">Output 6: <tt>debug</tt>
+</h2>
+<p>A scalar structure containing diagnostic information (see <tt>matEspresso</tt>):</p>
+<pre class="codeinput">[~,~,~,~,~,debug] = vecEspresso(<span class="string">'0110'</span>)
+debug.time        <span class="comment">% Timing information</span>
+</pre>
+<pre class="codeoutput">debug = 
+  struct with fields:
+
+    options: [1&times;1 struct]
+       time: [1&times;1 struct]
+     system: [1&times;1 struct]
+        raw: [1&times;1 struct]
+ans = 
+  struct with fields:
+
+       Espresso: 0.12524
+    matEspresso: 0.13144
+    vecEspresso: 0.13503
+</pre>
+<h2 id="16">Interesting Edge-Cases</h2>
+<pre class="codeinput">[~,~,~,ott] = vecEspresso(<span class="string">'1111'</span>) <span class="comment">% Constant-true function, output remains true</span>
+[~,~,~,ott] = vecEspresso(<span class="string">'0000'</span>) <span class="comment">% Constant-false function, output remains false</span>
+[~,~,~,ott] = vecEspresso(<span class="string">'----'</span>) <span class="comment">% DCs treated as all false (conservative)</span>
+[~,~,~,ott] = vecEspresso(<span class="string">'--00'</span>) <span class="comment">% DCs consumed as false when not needed</span>
+</pre>
+<pre class="codeoutput">ott =
+    '1111'
+ott =
+    '0000'
+ott =
+    '0000'
+ott =
+    '0000'
+</pre>
+<h2 id="17">Espresso vs. Quine-McCluskey</h2>
+<p>
+<tt>vecEspresso</tt> uses the <tt>Espresso</tt> algorithm, while <tt>minTruthtable</tt> uses the Quine-McCluskey algorithm. Both produce minimal or near-minimal Boolean expressions, but differ in:</p>
+<p>
+<b>Performance</b>
+</p>
+<div>
+<ul>
+<li>
+<tt>Espresso</tt>: Heuristic approach, scales well to large problems</li>
+<li>Quine-McCluskey: Exact but exponential complexity, slow for 10+ independent-variables</li>
+</ul>
+</div>
+<p>
+<b>Don't-Care Handling</b>
+</p>
+<div>
+<ul>
+<li>
+<tt>Espresso</tt>: Conservative - uses DCs only when beneficial for minimization</li>
+<li>Quine-McCluskey: Aggressive - maximally absorbs DCs into larger terms</li>
+</ul>
+</div>
+<p>This leads to systematically different (but equally valid) results when don't-cares are present.</p>
+<p>Consider a truth-vector with don't-cares at positions 3 and 6. Here <tt>minTruthtable</tt> creates the pattern <tt>'01-'</tt> which absorbs the don't-care at position 3 to cover both positions 2 and 3, producing <tt>ottM = '01110100'</tt>. In contrast, <tt>vecEspresso</tt> uses the more specific pattern <tt>'010'</tt> that covers only position 2 without absorbing the don't-care, producing <tt>ottE = '01100100'</tt>. Both approaches produce valid minimal forms with similar complexity (i.e. <tt>inpsM=6</tt> vs <tt>inpsE=7</tt>), the difference reflects algorithmic philosophy rather than one being superior to the other.</p>
+<pre class="codeinput">tt = <span class="string">'011-01-0'</span>;
+[BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
+[BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
+</pre>
+<pre class="codeoutput">BinsM =
+  2&times;3 char array
+    '-01'
+    '01-'
+inpsM =
+     6
+NumsM =
+  2&times;1 cell array
+    {[1 5]}
+    {[2 3]}
+ottM =
+    '01110100'
+BinsE =
+  2&times;3 char array
+    '010'
+    '-01'
+inpsE =
+     7
+NumsE =
+  2&times;1 cell array
+    {[  2]}
+    {[1 5]}
+ottE =
+    '01100100'
+</pre>
+<h2 id="18">
+<tt>minTruthtable</tt> Compatibility</h2>
+<p>
+<tt>vecEspresso</tt> is designed as a drop-in replacement for <tt>minTruthtable</tt>, with some key differences.</p>
+<p>
+<b><tt>vecEspresso</tt> supports:</b>
+</p>
+<div>
+<ul>
+<li>Core <tt>minTruthtable</tt> functionality (truth-vector minimization),</li>
+<li>The same four outputs (<tt>Bins</tt>, <tt>inps</tt>, <tt>Nums</tt>, <tt>ott</tt>),</li>
+<li>Input <tt>tt</tt> may be character, string, numeric, or logical.</li>
+</ul>
+</div>
+<p>The output type of <tt>Bins</tt> and <tt>ott</tt> match the input type where practical:</p>
+<div>
+<ul>
+<li>
+<tt>tt</tt> numeric/logical vector -&gt; output <tt>uint8</tt> vector (using values 0, 1, and 2),</li>
+<li>
+<tt>tt</tt> character vector -&gt; output character vector (using '0', '1', and '-'),</li>
+</ul>
+</div>
+<p>
+<b><tt>vecEspresso</tt> does not support:</b>
+</p>
+<div>
+<ul>
+<li>
+<tt>minTruthtable</tt> optimization flags ('e', 'Q', 'q', numeric levels),</li>
+<li>Verification flag 'v' (not needed - <tt>Espresso</tt> is well-tested).</li>
+</ul>
+</div>
+<p>
+<b><tt>vecEspresso</tt> additional features:</b>
+</p>
+<div>
+<ul>
+<li>
+<tt>'preserveDC'</tt> option to control don't-care handling,</li>
+<li>All <tt>matEspresso</tt> options (e.g. <tt>'Dexact'</tt>, <tt>'Efast'</tt>, etc.),</li>
+<li>Fifth output <tt>debug</tt> with diagnostic information,</li>
+<li>Supports numeric, logical, and string classes for input &amp; output.</li>
+</ul>
+</div>
+<p>
+<b><tt>vecEspresso</tt> performance:</b>
+</p>
+<div>
+<ul>
+<li>Generally faster for problems with 10+ independent-variables,</li>
+<li>Input is not limited to 2^15 elements,</li>
+<li>Uses heuristic minimization strategies.</li>
+</ul>
+</div>
+<p>
+<b>When to use <tt>vecEspresso</tt>:</b>
+</p>
+<div>
+<ul>
+<li>Working with more than 10 independent-variables,</li>
+<li>Truth tables larger than 2^15 elements,</li>
+<li>Speed is more important than guaranteed optimality,</li>
+<li>Working with very sparse truth tables (few true positions).</li>
+</ul>
+</div>
+<p>
+<b>When to use <tt>minTruthtable</tt>:</b>
+</p>
+<div>
+<ul>
+<li>Need guaranteed optimal solution (use with 'e' flag),</li>
+<li>Working with &lt;=10 independent-variables where speed isn't critical,</li>
+<li>Prefer Quine-McCluskey's aggressive DC absorption,</li>
+<li>Want to verify results against a different algorithm.</li>
+</ul>
+</div>
+<h2 id="19">When Results Differ from <tt>minTruthtable</tt>
+</h2>
+<p>
+<tt>vecEspresso</tt> and <tt>minTruthtable</tt> may produce different (but equivalent) minimal forms when:</p>
+<div>
+<ul>
+<li>Multiple optimal solutions exist (common in Boolean minimization)</li>
+<li>Don't-cares are present (different absorption strategies)</li>
+<li>Tie-breaking choices differ between algorithms</li>
+</ul>
+</div>
+<p>All differences represent valid minimal or near-minimal solutions.</p>
+<p>
+<b><tt>vecEspresso</tt> prioritizes:</b>
+</p>
+<div>
+<ul>
+<li>Speed for large problems</li>
+<li>Heuristic efficiency</li>
+<li>Conservative don't-care usage</li>
+</ul>
+</div>
+<p>
+<b><tt>minTruthtable</tt> prioritizes:</b>
+</p>
+<div>
+<ul>
+<li>Exact optimality (when using 'e' flag)</li>
+<li>Maximal term coverage</li>
+<li>Aggressive don't-care absorption</li>
+</ul>
+</div>
+<p>For problems with don't-cares or multiple optimal solutions, results may differ in how DCs are handled (both being valid minimal forms, in this case Espresso found a minimal form with slightly higher complexity):</p>
+<pre class="codeinput">tt = <span class="string">'01--1001'</span>;
+[BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
+[BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
+</pre>
+<pre class="codeoutput">BinsM =
+  3&times;3 char array
+    '100'
+    '0-1'
+    '-11'
+inpsM =
+    10
+NumsM =
+  3&times;1 cell array
+    {[  4]}
+    {[1 3]}
+    {[7 3]}
+ottM =
+    '01011001'
+BinsE =
+  3&times;3 char array
+    '100'
+    '001'
+    '111'
+inpsE =
+    12
+NumsE =
+  3&times;1 cell array
+    {[4]}
+    {[1]}
+    {[7]}
+ottE =
+    '01001001'
+</pre>
+<h2 id="20">Example: Large Truth-Table Performance</h2>
+<p>
+<tt>vecEspresso</tt> excels with larger problems. This would be impractical for <tt>minTruthtable</tt> but <tt>vecEspresso</tt> handles it efficiently using <tt>Espresso</tt>'s heuristic algorithms. For example, a 16-independent-variable truth-table (65,536 elements):</p>
+<pre class="codeinput">tt = repmat(<span class="string">'0'</span>, 1, 2^16); <span class="comment">% 16 independent-variables</span>
+tt([1, 100, 1000, 10000, 50000]) = <span class="string">'1'</span>;  <span class="comment">% 5 true minterms</span>
+tic
+[Bins, inps, Nums, ott] = vecEspresso(tt);
+toc
+</pre>
+<pre class="codeoutput">Elapsed time is 1.449644 seconds.
+</pre>
+<p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2025b</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+%% |vecEspresso| Examples
+%
+% The function |vecEspresso| is a wrapper of the function |matEspresso|
+% (itself a wrapper of |Espresso| executable). It provides drop-in
+% compatibility with the |minTruthtable| function (FEX 37118) while
+% leveraging |Espresso|'s superior performance on large problems.
+%
+% |vecEspresso| accepts a truth-vector (a vector representing all
+% possible combinations of Boolean variables) and returns minimized
+% covering patterns. This interface matches |minTruthtable|'s core
+% functionality while using a more efficient minimization algorithm.
+%
+% Refer to the |matEspresso| documentation for details on obtaining,
+% installing, and configuring the |Espresso| executable.
+%
+%% Terminology
+%
+% Terms commonly used in PLA contexts are easily confused with existing
+% terms used in MATLAB that have very different meanings. For that reason
+% we define the following two universal terms in place of the confusing ones:
+%
+% * *"independent-variable"* aka input, variable, argument, premise, predicate, condition, domain variable, input signal, etc.
+% * *"dependent-variable"* aka output, function, function value, consequent, result, response, target variable, output signal, etc.
+%
+%% Truth-Vector Format
+%
+% A truth-vector is a row vector of length $2^N$ that specifies which
+% binary numbers return TRUE for a Boolean function with $N$ independent-
+% variables. Position $k$ in the vector gives the dependent-variable value
+% (true/false,DC) when the independent-variables are the binary number $k$
+% written using exactly those $N$ bits, e.g. k=2 -> 10 (2 bits).
+%
+% For example, a 4-element truth-vector has 2-bits/independent-variables:
+%
+%   tt = '1010'                                  tt
+%                                                
+%   Position 0 -> binary 00 -> defined as true  '1'
+%   Position 1 -> binary 01 -> defined as false '0'
+%   Position 2 -> binary 10 -> defined as true  '1'
+%   Position 3 -> binary 11 -> defined as false '0'
+%
+% Note that |minTruthtable| uses the convention that the binary first
+% column (leftmost) is the most significant bit, i.e. MSB -> LSB.
+% For example, a 3-independent-variable function with variables A, B, C:
+%
+% * Column order in patterns: C  B  A  (left to right)
+% * Binary counting: 0=000, 1=001, 2=010, 3=011, 4=100, ... k=MSB:LSB ...
+%
+%% Input: Text
+%
+% The truth-vector may be a character vector or a string scalar,
+% the permitted characters are:
+%
+%    false: '0'
+%     true: '1'
+%       DC: '2' == '-' == '?'
+%
+% The four outputs are explained in detail below, and here briefly:
+%
+% * |Bins|: covering patterns
+% * |inps|: number of logic gate inputs needed for implementation
+% * |Nums|: which truth-table positions each pattern covers (0-indexed)
+% * |ott|: minimized output truth-vector
+%
+% For example, a 2-independent-variable function that is true at positions 1 and 3:
+[Bins,inps,Nums,ott] = vecEspresso('0101')
+%% Input: Numeric or Logical
+%
+% Numeric and logical vectors are accepted using these values:
+%
+%    false: 0 == false
+%     true: 1 == true  
+%       DC: 2
+%
+% For example, a 2-independent-variable function that is true at positions 1 and 3:
+[BinsN,inpsN,NumsN,ottN] = vecEspresso([0,1,0,1])
+[BinsL,inpsL,NumsL,ottL] = vecEspresso([false,true,false,true])
+%% Don't-Care Values
+%
+% Don't-care (DC) values indicate positions where the function value
+% is unspecified and can be chosen to simplify the minimization.
+% By default, |vecEspresso| consumes don't-cares during minimization.
+%
+% In this example the output |ott| has consumed the don't-cares (positions
+% 2 and 3) by setting them to '0' to create a simpler covering pattern:
+[Bins,inps,Nums,ott] = vecEspresso('01REPLACE_WITH_DASH_DASH')
+%% Don't-Care Preservation
+%
+% The |preserveDC| option controls whether don't-cares are consumed
+% or preserved in the output truth-vector. Use |preserveDC=true| when you
+% need to distinguish between "known false" and "unspecified", such as
+% when iteratively refining a truth table or when documenting which
+% don't-cares were actually used in minimization.
+%
+% In this example |ott| preserves the original don't-care positions,
+% only updating positions that are actually covered by the minimization:
+[Bins,inps,Nums,ott] = vecEspresso('01REPLACE_WITH_DASH_DASH', 'preserveDC',true)
+%% Larger Truth-Vectors
+%
+% |vecEspresso| supports larger truth-vectors compared to |minTruthtable|,
+% making it suitable for problems with many independent-variables.
+% For example, 4-independent-variables:
+[Bins,inps,Nums,ott] = vecEspresso('0000100110001000')
+%% Using Espresso Options
+%
+% All remaining options are passed directly to |matEspresso|, please see
+% the |matEspresso| documentation for complete option descriptions. For
+% example, to use exact minimization (slower but guaranteed optimal):
+[Bins,inps,Nums,ott] = vecEspresso('0101', 'Dexact',true)
+%% No-Output Display Mode
+%
+% When called without output arguments, |vecEspresso| displays a formatted
+% summary including a Karnaugh map (for 3-4 independent-variables), all
+% covering terms, the Boolean expression, and statistics:
+vecEspresso('01011010')
+%% Output 1: |Bins|
+%
+% The |Bins| output contains the covering patterns as a character matrix
+% (for char/string input) or |uint8| matrix (for numeric/logical input).
+% Each row represents one product term in the minimized expression.
+%
+% The values in |Bins| are:
+%
+% * |'0'| or 0: independent-variable must be false
+% * |'1'| or 1: independent-variable must be true
+% * |'-'| or 2: don't-care (independent-variable is not constrained)
+%
+% The column order follows |minTruthtable| convention where column 1
+% is the most significant independent-variable (i.e. MSB of the binary
+% number). For a 4-independent-variable function:
+%
+%   Name:    D  C  B  A
+%   Column:  1  2  3  4
+%
+%   Pattern: '1010' -> D=1, C=0, B=1, A=0.
+%
+Bins = vecEspresso('0000111100110011')
+%% Output 2: |inps|
+%
+% The |inps| output estimates the number of logic gate inputs required for
+% a sum-of-products implementation. To provide a rough measure of 
+% PLA-circuit implementation complexity it counts:
+%
+% * The number of literals in each product term (ignoring single-literal terms)
+% * One input per product term for the final OR gate (if multiple terms exist)
+%
+% This metric helps estimate the hardware cost or implementation complexity.
+% Lower |inps| values indicate simpler logic circuits requiring fewer gates.
+%
+% In this example, pattern '011' has 3 literals, pattern '1-0' has 2 literals,
+% and with 2 patterns we need a 2-input OR gate, giving inps=7 (3 + 2 + 2):
+[Bins,inps] = vecEspresso('00011010')
+%% Output 3: |Nums|
+%
+% The |Nums| output is a cell array where each cell Nums{k} corresponds to 
+% row k in |Bins|, showing which 0-indexed truth-table positions that pattern 
+% covers. This connection between patterns and covered positions is useful for:
+%
+% * Verifying complete coverage of all true positions
+% * Understanding which input combinations activate each term
+% * Debugging unexpected minimization results
+%
+% In this example, the pattern '1-' covers truth-table positions 2 and 3
+% (0-indexed), so Nums{1} = [2,3]:
+[Bins,inps,Nums] = vecEspresso('0011')
+%% Output 4: |ott|
+%
+% The |ott| output is the reconstructed truth-vector showing which
+% positions are covered by the minimized expression. By default,
+% don't-cares are consumed (set to '0' or '1'):
+[Bins,inps,Nums,ott] = vecEspresso('01REPLACE_WITH_DASH_DASH1001')
+%% Output 5: |expr|
+%
+% A character vector containing one Boolean expression per
+% dependent-variable, separated by newlines (see |matEspresso|):
+[~,~,~,~,expr] = vecEspresso('01REPLACE_WITH_DASH_DASH1001')
+%% Output 6: |debug|
+%
+% A scalar structure containing diagnostic information (see |matEspresso|):
+[~,~,~,~,~,debug] = vecEspresso('0110')
+debug.time        % Timing information
+%% Interesting Edge-Cases
+[~,~,~,ott] = vecEspresso('1111') % Constant-true function, output remains true
+[~,~,~,ott] = vecEspresso('0000') % Constant-false function, output remains false
+[~,~,~,ott] = vecEspresso('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH') % DCs treated as all false (conservative)
+[~,~,~,ott] = vecEspresso('REPLACE_WITH_DASH_DASH00') % DCs consumed as false when not needed
+%% Espresso vs. Quine-McCluskey
+%
+% |vecEspresso| uses the |Espresso| algorithm, while |minTruthtable| uses
+% the Quine-McCluskey algorithm. Both produce minimal or near-minimal
+% Boolean expressions, but differ in:
+%
+% *Performance*
+%
+% * |Espresso|: Heuristic approach, scales well to large problems
+% * Quine-McCluskey: Exact but exponential complexity, slow for 10+ independent-variables
+%
+% *Don't-Care Handling*
+%
+% * |Espresso|: Conservative - uses DCs only when beneficial for minimization
+% * Quine-McCluskey: Aggressive - maximally absorbs DCs into larger terms
+%
+% This leads to systematically different (but equally valid) results
+% when don't-cares are present.
+%
+% Consider a truth-vector with don't-cares at positions 3 and 6. Here
+% |minTruthtable| creates the pattern |'01-'| which absorbs the don't-care
+% at position 3 to cover both positions 2 and 3, producing |ottM = '01110100'|.
+% In contrast, |vecEspresso| uses the more specific pattern |'010'| that
+% covers only position 2 without absorbing the don't-care, producing 
+% |ottE = '01100100'|. Both approaches produce valid minimal forms with
+%  similar complexity (i.e. |inpsM=6| vs |inpsE=7|), the difference reflects
+% algorithmic philosophy rather than one being superior to the other.
+tt = '011-01-0';
+[BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
+[BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
+%% |minTruthtable| Compatibility
+%
+% |vecEspresso| is designed as a drop-in replacement for |minTruthtable|,
+% with some key differences.
+%
+% *|vecEspresso| supports:*
+%
+% * Core |minTruthtable| functionality (truth-vector minimization),
+% * The same four outputs (|Bins|, |inps|, |Nums|, |ott|),
+% * Input |tt| may be character, string, numeric, or logical.
+%
+% The output type of |Bins| and |ott| match the input type where practical:
+%
+% * |tt| numeric/logical vector -> output |uint8| vector (using values 0, 1, and 2),
+% * |tt| character vector -> output character vector (using '0', '1', and '-'),
+%
+% *|vecEspresso| does not support:*
+%
+% * |minTruthtable| optimization flags ('e', 'Q', 'q', numeric levels),
+% * Verification flag 'v' (not needed - |Espresso| is well-tested).
+%
+% *|vecEspresso| additional features:*
+%
+% * |'preserveDC'| option to control don't-care handling,
+% * All |matEspresso| options (e.g. |'Dexact'|, |'Efast'|, etc.),
+% * Fifth output |debug| with diagnostic information,
+% * Supports numeric, logical, and string classes for input & output.
+%
+% *|vecEspresso| performance:*
+%
+% * Generally faster for problems with 10+ independent-variables,
+% * Input is not limited to 2^15 elements,
+% * Uses heuristic minimization strategies.
+%
+% *When to use |vecEspresso|:*
+%
+% * Working with more than 10 independent-variables,
+% * Truth tables larger than 2^15 elements,
+% * Speed is more important than guaranteed optimality,
+% * Working with very sparse truth tables (few true positions).
+% 
+% *When to use |minTruthtable|:*
+%
+% * Need guaranteed optimal solution (use with 'e' flag),
+% * Working with <=10 independent-variables where speed isn't critical,
+% * Prefer Quine-McCluskey's aggressive DC absorption,
+% * Want to verify results against a different algorithm.
+%
+%% When Results Differ from |minTruthtable|
+%
+% |vecEspresso| and |minTruthtable| may produce different (but
+% equivalent) minimal forms when:
+%
+% * Multiple optimal solutions exist (common in Boolean minimization)
+% * Don't-cares are present (different absorption strategies)
+% * Tie-breaking choices differ between algorithms
+%
+% All differences represent valid minimal or near-minimal solutions.
+%
+% *|vecEspresso| prioritizes:*
+%
+% * Speed for large problems
+% * Heuristic efficiency
+% * Conservative don't-care usage
+%
+% *|minTruthtable| prioritizes:*
+%
+% * Exact optimality (when using 'e' flag)
+% * Maximal term coverage
+% * Aggressive don't-care absorption
+%
+% For problems with don't-cares or multiple optimal solutions, results may
+% differ in how DCs are handled (both being valid minimal forms, in this
+% case Espresso found a minimal form with slightly higher complexity):
+tt = '01REPLACE_WITH_DASH_DASH1001';
+[BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
+[BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
+%% Example: Large Truth-Table Performance
+%
+% |vecEspresso| excels with larger problems. This would be impractical for
+% |minTruthtable| but |vecEspresso| handles it efficiently using 
+% |Espresso|'s heuristic algorithms.
+% For example, a 16-independent-variable truth-table (65,536 elements):
+%
+tt = repmat('0', 1, 2^16); % 16 independent-variables
+tt([1, 100, 1000, 10000, 50000]) = '1';  % 5 true minterms
+tic
+[Bins, inps, Nums, ott] = vecEspresso(tt);
+toc
+##### SOURCE END #####
+-->
+</body>
+</html>
