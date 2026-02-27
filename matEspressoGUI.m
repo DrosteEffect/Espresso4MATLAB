@@ -56,6 +56,8 @@ if isempty(uif) || ~ishghandle(uif)
 	[uif,uit,uis,uot,uoe,ddm] = megNewFig(opts,@megTableClBk,@megSpinClBk,@megUpDate);
 	fgc = uoe.FontColor;
 	fgp = get(uif, 'Pointer');
+else
+	figure(uif)
 end
 %
 set(uis,{'Value'},{size(args{1},1);size(args{1},2);size(args{2},2)})
@@ -271,6 +273,7 @@ uis(1).Tag = 'rows';
 uis(1).Value = 1;
 uis(1).Limits = [1,Inf];
 uis(1).Step = 1;
+uis(1).RoundFractionalValues = 'on';
 uis(1).ValueChangedFcn = spnClBk;
 uis(1).Layout.Row = 6;
 uis(1).Layout.Column = 2;
@@ -281,6 +284,7 @@ uis(2).Tag = 'indC';
 uis(2).Value = 1;
 uis(2).Limits = [1,Inf];
 uis(2).Step = 1;
+uis(2).RoundFractionalValues = 'on';
 uis(2).ValueChangedFcn = spnClBk;
 uis(2).Layout.Row = 6;
 uis(2).Layout.Column = 1;
@@ -291,6 +295,7 @@ uis(3).Tag = 'depC';
 uis(3).Value = 1;
 uis(3).Limits = [1,Inf];
 uis(3).Step = 1;
+uis(3).RoundFractionalValues = 'on';
 uis(3).ValueChangedFcn = spnClBk;
 uis(3).Layout.Row = 6;
 uis(3).Layout.Column = 3;
