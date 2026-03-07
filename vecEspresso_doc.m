@@ -1,4 +1,4 @@
-%% |vecEspresso| Examples
+%% |vecEspresso| User Guide
 %
 % The function |vecEspresso| is a wrapper of the function |matEspresso|
 % (itself a wrapper of |Espresso| executable). It provides drop-in

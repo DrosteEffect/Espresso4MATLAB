@@ -1,4 +1,4 @@
-%% |matEspresso| Examples
+%% |matEspresso| User Guide
 %
 % The function |matEspresso| is a MATLAB wrapper for the venerable
 % <https://en.wikipedia.org/wiki/Espresso_heuristic_logic_minimizer
@@ -12,7 +12,9 @@
 % The companion function |matEspressoGUI| is an interactive GUI that
 % demonstrates |matEspresso| usage via editable input tables and
 % live-updating of the minimized output tables and expressions.
+%
 %% |Espresso|: Download and Installation
+%
 % |Espresso| is not shipped with MATLAB. You must install an |Espresso|
 % executable and ensure it is discoverable by |matEspresso|. For example,
 % this Win10-compatible version: <https://github.com/Gigantua/Espresso>
@@ -177,6 +179,7 @@ indOut = matEspresso(indIn,depIn)
 % * input table -> table output with |uint8| columns/variables (as above).
 %
 % The above examples show |indOut| output.
+%
 %% Output 2: |depOut|
 %
 % A matrix/table of the same row count as |indOut| indicating which
@@ -213,6 +216,7 @@ depIn = [1,0; 0,1; 0,2]
 dbg.system.result
 dbg.time
 %% Temporary File
+%
 % |matEspresso| passes the input data to |Espresso| via a temporary |.PLA|
 % file stored in |tempdir|. By default these are deleted after use (and
 % might end up in the desktop's recycling bin). Note that you can:
@@ -220,10 +224,12 @@ dbg.time
 % * Use option |rmTemp| to control if this file is automatically deleted or not.
 % * Get the filepath from the 4th output |debug.system.tempPLA|.
 % * Set MATLAB's recycle state: <https://www.mathworks.com/help/matlab/ref/recycle.html>
+%
 %% |matEspressoGUI| Interactive Demo
 %
 % |matEspressoGUI| provides an interactive UI that calls |matEspresso| on
 % every uitable edit. One key difference is that |indIn| and |depIn| must
 % be numeric/logical matrices or tables with numeric/logical columns/variables
 % (categorical and character encodings are not accepted by the GUI).
+%
 matEspressoGUI([0,0;0,1;1,0;1,1],[0;0;0;1])
