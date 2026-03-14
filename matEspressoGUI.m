@@ -2,7 +2,7 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 % Interactive demonstration of MATESPRESSO truth-table minimization.
 %
 % Interactive GUI for demonstrating MATESPRESSO truth-table minimization.
-% UITABLEs allow interactive input of independent/dependet-variable values,
+% UITABLEs allow interactive input of independent/dependent-variable values,
 % which triggers updates of the output tables and boolean expression display.
 %
 %%% Syntax %%%
@@ -24,10 +24,23 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 %% Dependencies %%
 %
 % * MATLAB R2019b or later.
-% * matEspresso.m from <>
+% * matEspresso.m from <https://www.mathworks.com/matlabcentral/fileexchange/183127>
 %
-% See also MATESPRESSO VECESPRESSO
+% See also MATESPRESSO VECESPRESSO UIFIGURE UITABLE WAITFOR
 persistent uif uit uis uot uoe fgc ddm fgp
+% Release | Feature
+% --------|--------
+% R2014b  | gobjects (pre-allocate graphics object arrays)
+% R2016a  | uifigure
+% R2016b  | startsWith
+% R2016b  | string class: join (string-array join)
+% R2016b  | string class: strcat/cellfun interoperability
+% R2018b  | uitextarea, uilabel
+% R2019a  | uidropdown
+% R2019b  | uigridlayout (including 'fit' row/column size specifier)
+% R2019b  | uispinner (including RoundFractionalValues property)
+% R2019b  | uistyle, addStyle, removeStyle for uitable in uifigure
+%
 %% Input Wrangling %%
 %
 switch nargin
@@ -40,8 +53,8 @@ switch nargin
 		args = {indIn,depIn};
 end
 %
-args{1} = megArr2uint8('ind',args{1});
-args{2} = megArr2uint8('dep',args{2});
+args{1} = megArr2int8('ind',args{1});
+args{2} = megArr2int8('dep',args{2});
 %
 % This does input checking, we get the normalized options structure:
 [indOut,depOut,expr,debug] = matEspresso(nan(1,0),[],varargin{:});
@@ -143,22 +156,25 @@ megUpDate()
 		set([uit,uot],{'Data'},{iInp;dInp;iOut;dOut})
 		%
 		if (fgc*[0.298936;0.587043;0.114021])<0.54 % lightmode
-			rSty = uistyle('BackgroundColor',[0.95,0.85,0.85]);
-			fSty = uistyle('BackgroundColor',[0.85,0.95,0.85]);
-			dSty = uistyle('BackgroundColor',[0.95,0.95,0.80]);
+			rSty = uistyle('BackgroundColor',[0.95,0.85,0.85]); % off
+			fSty = uistyle('BackgroundColor',[0.85,0.95,0.85]); % on
+			dSty = uistyle('BackgroundColor',[0.95,0.95,0.80]); % DC
+			iSty = uistyle('BackgroundColor',[0.88,0.88,0.88]); % ignored
 		else % darkmode
-			rSty = uistyle('BackgroundColor',[0.25,0.15,0.15]);
-			fSty = uistyle('BackgroundColor',[0.15,0.25,0.15]);
-			dSty = uistyle('BackgroundColor',[0.25,0.25,0.12]);
+			rSty = uistyle('BackgroundColor',[0.25,0.15,0.15]); % off
+			fSty = uistyle('BackgroundColor',[0.15,0.25,0.15]); % on
+			dSty = uistyle('BackgroundColor',[0.25,0.25,0.12]); % DC
+			iSty = uistyle('BackgroundColor',[0.20,0.20,0.20]); % ignored
 		end
 		%
 		uiC = {uit(1),uit(2),uot(1),uot(2)};
 		xxM = {   iIM,   dIM,   iOM,   dOM};
 		for kk = 1:4
 			removeStyle(uiC{kk})
-			megGuiStyle(uiC{kk},rSty,xxM{kk}==0)
-			megGuiStyle(uiC{kk},fSty,xxM{kk}==1)
-			megGuiStyle(uiC{kk},dSty,xxM{kk}==2)
+			megGuiStyle(uiC{kk},rSty,xxM{kk}==0) % off
+			megGuiStyle(uiC{kk},fSty,xxM{kk}==1) % on
+			megGuiStyle(uiC{kk},dSty,xxM{kk}==2) % DC
+			megGuiStyle(uiC{kk},iSty,xxM{kk}==5) % ignored
 		end
 		drawnow()
 	end
@@ -171,21 +187,21 @@ end
 %
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspressoGUI
-function out = megArr2uint8(pfx,arr)
-% Convert from numeric/logical to UINT8. Applies to array or table columns.
+function out = megArr2int8(pfx,arr)
+% Convert from numeric/logical to INT8. Applies to array or table columns.
 if isnumeric(arr)||islogical(arr)
-	out = uint8(arr);
+	out = int8(arr);
 elseif istable(arr)
 	assert(all(varfun(@(x)isnumeric(x)||islogical(x), arr, 'OutputFormat','uniform')),...
 		sprintf('SC:matEspressoGUI:%sIn:ColumnNotNumericNorLogical',pfx),...
 		'Table variable has wrong type.\nAll variables of table <%sIn> must be numeric or logical',pfx);
-	out = table2array(varfun(@uint8, arr, 'OutputFormat','table'));
+	out = table2array(varfun(@int8, arr, 'OutputFormat','table'));
 else
 	error(sprintf('SC:matEspressoGUI:%sIn:NotNumericNorTable',pfx),...
 		'Input <%sIn> must be numeric, logical, or table type.',pfx)
 end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%megArr2uint8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%megArr2int8
 function megGuiStyle(obj,style,idx)
 if any(idx(:))
 	[rx,cx] = find(idx);
@@ -358,7 +374,7 @@ fdr = {'f', 'd', 'r', 'fd', 'fr', 'dr', 'fdr'};
 ddm = uidropdown(uig);
 ddm.Items = megItemsData(fdr);
 ddm.ItemsData = fdr;
-ddm.ValueIndex = find(strcmpi(stpo.Eout,fdr));
+ddm.Value = stpo.Eout;
 ddm.Layout.Row = 6;
 ddm.Layout.Column = [4,6];
 ddm.Tooltip = 'Select which cases to return from Espresso';

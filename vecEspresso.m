@@ -31,6 +31,12 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 % - Espresso minimization options,
 % - Generally faster for problems with 10+ independent-variables,
 % - Accepts char/string/numeric input, returns char/string/numeric outputs.
+% - Numeric/logical <tt> returns int8 <Bins> and <ott>, not char as minTruthtable does.
+% - DCs in numeric/logical <tt> must be exactly value 2, not any non-zero/non-one value.
+%
+% You can compare minTruthtable's demo too:
+%
+%   vecEspresso 0000100-1-1110-1
 %
 %% Examples %%
 %
@@ -72,42 +78,57 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %   tt = Truth-vector (row vector of length 2^N) representing a Boolean
 %        function over N independent-variables. The input <tt> can be:
 %        - Char vector or string scalar, which contains only the following
-%          characters: '0' (false), '1' (true), '2'/'-'/'?' (don't-care).
-%        - Numeric/logical vector: 0/false, 1/true, 2 (don't-care).
+%          characters: '0' (false), '1' (true), '2'/'-'/'?' (don't-care,DC).
+%        - Numeric/logical vector: 0/false, 1/true, 2 (don't-care,DC).
 %        Length must be a power of 2, representing all 2^N combinations
 %        of N boolean independent-variables in binary counting order.
 %   <options> = Name-value pairs controlling minimization behavior:
 %        'preserveDC' = logical scalar where:
-%        - false**: don't-cares are consumed (output contains only true & false)
-%        - true   : don't-cares preserved in output where input had them
+%        - false**: DCs are consumed (output contains only true & false)
+%        - true   : DCs preserved in output where input had them
 %        All other options are passed to matEspresso.
 %
 %% Output Arguments %%
 %
-%   Bins = Covering patterns as character/uint8 matrix or string array.
-%          Each row represents one product term.
-%   inps = Number of specified conditions per covering pattern.
-%          Vector of integers counting non-wildcard positions.
-%          Example: '-10' has 2 specified conditions.
-%   Nums = Cell array of covered truth-table row indices (0-based indexing).
-%          Each cell contains indices that the corresponding pattern covers.
-%          Example: {[2,3]} means pattern covers rows 2 and 3 (0-indexed).
-%   ott  = Minimized truth-vector as character/uint8 matrix or string array.
-%          Default preserveDC=false: <ott> contains only true & false.
-%          With preserveDC=true <ott> retains don't-cares from the input.
-%   expr = CharacterVector containing minimal Boolean expressions, one
-%          per dependent-variable, separated by newlines. Uses MATLAB
-%          syntax (~, &, |) with parenthesized product terms.
+%   Bins = Covering patterns, size nTerms-by-N, the class depends on <tt>:
+%          - <tt> = char            -> char matrix  (values '0', '1', '-')
+%          - <tt> = string          -> string array (values '0', '1', '-')
+%          - <tt> = numeric/logical -> int8 matrix  (values 0, 1, 2)
+%          Each row of <Bins> represents one product term.
+%          nTerms = number of product terms in the minimized expression,
+%          note that nTerms is 0 when the function is constant false.
+%   inps = Double scalar, the gate complexity of the minimized function.
+%          Counts literals in multi-literal product terms (AND gate-inputs)
+%          plus one gate-input per product term for the OR gate (if there
+%          are 2 or more terms). Single-literal and constant functions
+%          contribute 0. Lower values indicate simpler logic circuits.
+%          Example: <tt>='0110' returns Z=(A&~B)|(~A&B) which has
+%          2+2 AND gate-inputs + 2 OR gate-inputs thus giving <inps>=6.
+%   Nums = nTerms-by-1 cell array of covered truth-table row indices.
+%          Each cell contains a 1-by-K double row vector of 0-based indices
+%          of the truth-table rows covered by the corresponding pattern.
+%          Example: {[2,3]} means the pattern covers rows 2 and 3 (0-indexed).
+%   ott  = Minimized truth-vector, the class depends on <tt>:
+%          - <tt> = char            -> char vector   (values '0', '1')
+%          - <tt> = string          -> string scalar (values '0', '1')
+%          - <tt> = numeric/logical -> int8 vector   (values 0, 1)
+%          With preserveDC=true <ott> also retains DCs from the input.
+%   expr = Char vector (or string scalar if <tt> is string) containing one
+%          boolean expression per dependent-variable, separated by newlines.
+%          Uses MATLAB syntax (~, &, |) with parenthesized product terms.
 %   debug = ScalarStruct containing detailed information about the run,
 %          including timing, raw PLA data, statistics, and options used.
+%          Note: for 0-independent-variable functions only the timing
+%          field is present: PLA data, statistics, and options are absent.
 %
 %% Dependencies %%
 %
 % * MATLAB R2009b or later.
-% * matEspresso.m from <>
+% * matEspresso.m from <https://www.mathworks.com/matlabcentral/fileexchange/183127>
 %
-% See also MATESPRESSO MINTRUTHTABLE
-tFun = tic();
+% See also MATESPRESSO MATESPRESSOGUI MINTRUTHTABLE DEC2BIN BIN2DEC
+ticH = tic();
+fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));
 %% Input Wrangling %%
 %
 % Set up default options
@@ -161,8 +182,8 @@ assert(ttPwr<=52,...
 if ischar(ttInp)
 	assert(all(ismember(ttInp,'012-?')),...
 		'SC:vecEspresso:tt:InvalidCharacters',...
-		'Input <tt> must only contain ''0'', ''1'', ''2'', ''-'', ''?'' characters.')
-	ttNum = uint8(ttInp)-uint8('0');
+		'Input <tt> must only contain %s characters.',fErr('012-?'))
+	ttNum = int8(ttInp)-int8('0');
 	ttNum(~ismember(ttNum,0:2)) = 2;
 	ttTxt = ttInp;
 else
@@ -171,7 +192,7 @@ else
 		'Input <tt> must be a scalar string or a char/numeric/logical vector.')
 	assert(all(ismember(ttInp,0:2)),'SC:vecEspresso:tt:InvalidValues',...
 		'Input <tt> must contain only these values: 0/false, 1/true, and 2 (don''t-care).')
-	ttNum = uint8(ttInp);
+	ttNum = int8(ttInp);
 	ttTxt = char(ttNum+'0');
 end
 %
@@ -188,24 +209,26 @@ if ttLen>1
 else
 	switch ttNum
 		case 0 % tt='0': constant false function
-			indOut = zeros(0,0,'uint8');
+			indOut = zeros(0,0,'int8');
 			nTerms = 0;
+			expr = 'Z = 0';
 		case 1 % tt='1': constant true function
-			indOut = zeros(1,0,'uint8');
+			indOut = zeros(1,0,'int8');
 			nTerms = 1;
+			expr = 'Z = 1';
 		case 2 % tt='-': don't-care function
-			indOut = zeros(1,0,'uint8'); % Treat as constant true
-			nTerms = 1;
+			indOut = zeros(0,0,'int8');
+			nTerms = 0; % treated conservatively as constant false
+			expr = 'Z = 0';
 		otherwise
 			error('This should never happen')
 	end
-	expr = ''; % No expression for 0-variable functions
 	debug = struct(); % Minimal debug info
 end
 %
 %% Convert Results to minTruthtable Format
 %
-% Calculate inps: Count specified conditions per pattern
+% Calculate cnts (non-DC literals per term) and derive inps (gate complexity)
 cnts = sum(indOut~=2,2);
 inps = sum(cnts(cnts>1)) + (numel(cnts)>1)*numel(cnts);
 %
@@ -214,7 +237,7 @@ Nums = cell(nTerms,1);
 if ttPwr>0 && nTerms>0
 	rVec = 0:ttLen-1;
 	tVec = uint64(rVec(:));
-	allX = zeros(ttLen,ttPwr,'uint8');
+	allX = zeros(ttLen,ttPwr,'int8');
 	for bit = ttPwr:-1:1 % (LSB):-1:(MSB)
     	allX(:,bit) = bitand(tVec,1)~=0;
     	tVec = bitshift(tVec,-1);
@@ -278,14 +301,14 @@ if ischar(ttInp)
 		else
 			Bins = string.empty(0,1);
 		end
-		ott = string(ott);
+		ott  = string(ott);
 		expr = string(expr);
 	end
 else % numeric/logical
-	Bins = uint8(indOut);
+	Bins = int8(indOut);
 end
 %
-debug.time.(mfilename) = toc(tFun);
+debug.time.(mfilename) = toc(ticH);
 %
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%vecEspresso

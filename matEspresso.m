@@ -48,7 +48,8 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %          | See Note0 | each column of <depIn> (automagic names if empty).
 % ---------|-----------|--------------------------------------------------------
 % outCats  | See Note0 | Three category names corresponding to false, true, DC.
-%          |           | By default these are {'off','on','DC'}.
+%          |           | By default these are {'off','on','DC'}. A fourth
+%          |           | category 'ignored' is also appended to <depOut>.
 % ---------|-----------|--------------------------------------------------------
 % rmTemp   | false     | Leaves the temp .PLA file (faster, OS/user must delete).
 %          | true**    | Deletes the temp .PLA file (slower).
@@ -82,7 +83,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %% Examples %%
 %
 %   % Minimize one dependent-variable with three independent-variables:
-%   >> indIn = [0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1];
+%   >> indIn = [0,1,0; 0,1,1; 1,0,0; 1,0,1; 1,1,0; 1,1,1];
 %   >> [indOut,depOut,expr] = matEspresso(indIn)
 %   indOut =
 %         1     2     2
@@ -94,8 +95,8 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %        'Z = A | B'
 %
 %   % Minimize two dependent-variables with two independent-variables:
-%   >> indIn = [0 0; 0 1; 1 0; 1 1];
-%   >> depIn = [0 0; 0 1; 1 0; 1 1];
+%   >> indIn = [0,0; 0,1; 1,0; 1,1];
+%   >> depIn = [0,0; 0,1; 1,0; 1,1];
 %   >> [indOut,depOut,expr] = matEspresso(indIn, depIn, 'depNames',{'hello','world'})
 %   indOut =
 %         1     2
@@ -108,7 +109,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %         world = B'
 %
 %   % Simplify/factorize one dependent-variable with three independent-variables:
-%   >> indIn = [1 1 0; 1 0 1; 0 1 1];
+%   >> indIn = [1,1,0; 1,0,1; 0,1,1];
 %   >> [~,~,expr] = matEspresso(indIn)
 %   expr =
 %        'Z = (A & B & ~C) | (A & ~B & C) | (~A & B & C)'
@@ -123,7 +124,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %           Values must be: 0/false/off/no, 1/true/on/yes, 2/DC/-/? (don't-care).
 %   depIn = Matrix (numeric/logical/categorical/char) or table (numeric
 %           columns/variables only) with dependent-variable data.
-%           Values must be: 0/false/off/no, 1/true/on/yes, 2/DC/-/? (don't-care).
+%           Values must be: 0/false/off/no, 1/true/on/yes, 2/DC/-/? (don't-care), 5/~.
 %           3 is an alias for 0, 4 is an alias for 1, 5/~ is ignored.
 %           If omitted or [] then <depIn> implicitly consists of 1's only.
 %   options = ScalarStructure or name-value optional arguments as per the
@@ -131,12 +132,13 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %
 %% Output Arguments %%
 %
-%   indOut = Matrix (uint8/categorical/char) or table (uint8 variables)
+%   indOut = Matrix (int8/categorical/char) or table (int8 variables)
 %            of simplified patterns over the independent-variables.
 %            Each row is a covering pattern with values 0/false, 1/true, 2/DC/-.
-%   depOut = Matrix (uitn8/categorical/char) or table (uint8 variables)
+%   depOut = Matrix (int8/categorical/char) or table (int8 variables)
 %            showing which patterns cover which dependent-variables.
-%            Each row is a covering pattern with values 0/false, 1/true, 2/DC/-.
+%            Each row is a covering pattern with values 0/false, 1/true, 2/DC/-
+%            and (when option <Eout> combines 'f' with other sets) 5/~/ignored.
 %   expr   = CharacterVector containing minimal Boolean expressions, one
 %            per dependent-variable, separated by newlines. Uses MATLAB
 %            syntax (~, &, |) with parenthesized product terms.
@@ -145,18 +147,30 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %
 %% Dependencies %%
 %
-% * MATLAB R2009b or later.
+% * MATLAB R2008b or later.
 % * Symbolic Math Toolbox iff using the <simplify> option.
 % * Espresso executable is on the MATLAB search path, or on the
 %   system PATH, or its location is specified via <exePath> option.
-% * TempFileCleanup.m from <>
+% * TempFileCleanup.m from <https://www.mathworks.com/matlabcentral/fileexchange/183127>
 %
 % See also MATESPRESSOGUI VECESPRESSO TEMPFILECLEANUP SIMPLIFY SYSTEM
-tFun = tic();
+% CATEGORICAL CATEGORIES ARRAY2TABLE TABLE2ARRAY ISVARNAME
+ticH = tic();
+fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));
+otyp = 'int8';
+% Release | Feature
+% --------|--------
+% R2007b  | regexp: cell-array-of-char, split option, tokens & ones outputs
+% R2008a  | assert(cond, msgID, msg, printf format string)
+% R2008b  | id=tic(); ... toc(id);
+% R2010b  | iscolumn                               [only if table supplied]
+% R2013b  | categorical class                            [only if supplied]
+% R2013b  | table class, array2table varfun table2array  [only if supplied]
+% R2016b  | string class, string curly-brace indexing    [only if supplied]
+%
 %% Input Wrangling %%
 %
 % Set up default options
-otyp = 'uint8';
 stpo = struct('rmTemp',true,... delete .PLA file saved in TEMPDIR
 	'Dcheck',false, 'Dexact',false, 'Dopo',false, 'Dpair',false,... debug
 	'Efast',false, 'Eout','f', 'indNames',{{}}, 'depNames',{{}}, ...
@@ -193,8 +207,8 @@ elseif ischar(indIn)
 	otyp = 'char';
 	assert(all(ismember(indIn(:),'012-?')),...
 		'SC:matEspresso:indIn:InvalidCharacters',...
-		'Input <indIn> must only contain ''0'', ''1'', ''2'', ''-'', and ''?'' characters.')
-	indIn = uint8(indIn)-uint8('0');
+		'Input <indIn> must only contain %s characters.',fErr('012-?'))
+	indIn = int8(indIn)-int8('0');
 	indIn(~ismember(indIn,0:2)) = 2;
 end
 %
@@ -208,12 +222,12 @@ elseif ischar(depIn)
 	otyp = 'char';
 	assert(all(ismember(depIn(:),'012345-?~')),...
 		'SC:matEspresso:depIn:InvalidCharacters',...
-		'Input <depIn> must only contain ''0'', ''1'', ''2'', ''3'', ''4'', ''5'', ''~'', ''-'', and ''?'' characters.')
+		'Input <depIn> must only contain %s characters.',fErr('012345~-?'))
 	depIn(depIn=='~') = '5';
-	depIn = uint8(depIn)-uint8('0');
+	depIn = int8(depIn)-int8('0');
 	depIn(~ismember(depIn,0:5)) = 2;
 elseif isnumeric(depIn) && isequal(depIn,[])
-	depIn = ones(size(indIn,1),1,'uint8');
+	depIn = ones(size(indIn,1),1,'int8');
 end
 %
 assert(size(indIn,1)>0,...
@@ -223,8 +237,8 @@ assert(size(indIn,1)==size(depIn,1),...
 	'SC:matEspresso:RowCountMismatch',...
 	'Inputs <indIn> and <depIn> must have the same number of rows.')
 %
-indIn = meMatrix2uint8('ind',indIn,2);
-depIn = meMatrix2uint8('dep',depIn,5);
+indIn = meMatrix2int8('ind',indIn,2);
+depIn = meMatrix2int8('dep',depIn,5);
 %
 depIn(depIn==3) = 0; % Espresso alias 3->0
 depIn(depIn==4) = 1; % Espresso alias 4->1
@@ -235,6 +249,8 @@ depCnt = size(depIn,2);
 stpo = meMakeNames(stpo, indCnt, depCnt);
 %
 stpo.Eout = lower(stpo.Eout);
+% NOTE: '' correctly fails! REGEXP returns [] for a zero-length match,
+% so ISEQUAL(1,[]) is false. The ASSERT therefore rejects empty <Eout>.
 assert(isequal(1,regexp(stpo.Eout,'^f?d?r?$','once')),...
 	'SC:matEspresso:Eout:InvalidOrderOrCharacters',...
 	['The option <Eout> must be a string scalar or character vector.'...
@@ -264,9 +280,9 @@ fprintf(fid,'.i %d\n', size(indIn,2));
 fprintf(fid,'.o %d\n', size(depIn,2));
 fprintf(fid,'.ilb%s\n',sprintf(' %s',stpo.indNames{:}));
 fprintf(fid, '.ob%s\n',sprintf(' %s',stpo.depNames{:}));
-mPrintf(fid,'.p %d\n','1',indChars,depChars); % ON
-mPrintf(fid,'.d %d\n','2',indChars,depChars); % DC
-mPrintf(fid,'.r %d\n','0',indChars,depChars); % OFF
+mePrintf(fid,'.p %d\n','1',indChars,depChars); % ON
+mePrintf(fid,'.d %d\n','2',indChars,depChars); % DC
+mePrintf(fid,'.r %d\n','0',indChars,depChars); % OFF
 fprintf(fid,'.e');
 %
 fclose(fid);
@@ -292,7 +308,7 @@ switch status
 	case -1 % System error (rare):
 		error('SC:matEspresso:system:SystemError',...
 			'System call to Espresso failed (status -1). Check system resources.');
-	case 0 % No error but empty result:
+	case 0 % Success: verify result is non-empty before parsing:
 		assert(numel(result)>0,...
 			'SC:matEspresso:system:EmptyResult',...
 			'Espresso executed successfully but returned no output.')
@@ -334,13 +350,16 @@ allRows = regexp(result,'[\n\r]+','split');
 booRows = regexp(allRows,'^[-012?]+\s+[-~012345]+$','match','once');
 idyRows = cellfun('isempty',booRows);
 if all(idyRows)
-	indOut = zeros(0,indCnt,'uint8');
-	depOut = zeros(0,depCnt,'uint8');
+	indOut = zeros(0,indCnt,'int8');
+	depOut = zeros(0,depCnt,'int8');
 else
 	booChar = vertcat(booRows{~idyRows});
-	booData = uint8(booChar)-uint8('0');
-	booData(booChar=='-') = 2;
-	booData(booChar=='~') = 5;
+	booData = int8(booChar)-int8('0');
+	booData(booChar=='-') = 2; % don't care
+	booData(booChar=='~') = 5; % '~' appears in dependent-variable output
+	% columns when <Eout> combines 'f' with other sets (fd/fr/fdr).
+	% Espresso uses '~' to indicate that a covering pattern does not
+	% contribute to a particular dependent-variable, i.e. 'ignored'.
 	%
 	indOut = booData(:,1:indCnt);
 	depOut = booData(:,end-depCnt+1:end);
@@ -360,15 +379,16 @@ end
 %
 switch otyp
 	case 'cat'
+		indOut = categorical(indOut, 0:2   ,stpo.outCats, 'Protected',true);
 		stpo.outCats{4} = 'ignored';
-		indOut = categorical(indOut,[0:2,5],stpo.outCats, 'Protected',true);
 		depOut = categorical(depOut,[0:2,5],stpo.outCats, 'Protected',true);
 	case 'tbl'
 		indOut = array2table(indOut, 'VariableNames',stpo.indNames);
 		depOut = array2table(depOut, 'VariableNames',stpo.depNames);
 	case 'char'
 		indOut = char('0'+indOut); indOut(~ismember(indOut,'01')) = '-';
-		depOut = char('0'+depOut); depOut(~ismember(depOut,'01')) = '-';
+		depOut = char('0'+depOut); depOut(~ismember(depOut,'015')) = '-';
+		depOut(depOut=='5') = '~';
 end
 %
 if depCnt>1 && nargout<2
@@ -376,7 +396,7 @@ if depCnt>1 && nargout<2
 		'Multiple dependent-variables detected (%d) but only one output requested.\nReturning only <indOut>. Request two outputs to also obtain <depOut>.',depCnt);
 end
 %
-debug.time.(mfilename) = toc(tFun);
+debug.time.(mfilename) = toc(ticH);
 %
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspresso
@@ -393,7 +413,7 @@ if isa(arr,'string')
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meNs2c
-function mPrintf(fid,fmt,one,indC,depC)
+function mePrintf(fid,fmt,one,indC,depC)
 idx = any(depC==one,2);
 if any(idx)
 	fprintf(fid,fmt,nnz(idx));
@@ -402,18 +422,18 @@ if any(idx)
 	end
 end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%mePrint
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%mePrintf
 function out = meCategorical2Matrix(pfx,inp,isx)
 two = {'2','-','?','dc','dontcare','maybe'};
-c01 = {'0','off','no','false','1','on','yes','true','3','4','5','~'};
-v01 = [  0,    0,   0,      0,  1,   1,    1,     1,  3,  4,  5,  5];
+c01 = {'0','off','no','false','1','on','yes','true','3','4','5','~','ignore','ignored'};
+v01 = [  0,    0,   0,      0,  1,   1,    1,     1,  3,  4,  5,  5,        5,       5];
 idx = v01<=(1+9*isx);
 cci = categories(inp);
 txt = sprintf(', %s',c01{idx},two{:});
 assert(all(ismember(lower(cci),[c01(idx),two])),...
 	sprintf('SC:matEspresso:%sIn:UnsupportedCategory',pfx),...
 	'Input <%sIn> must contain only supported categories:\n%s',pfx,txt(2:end))
-out = 1+ones(size(inp),'uint8');
+out = 1+ones(size(inp),'int8');
 for kk = 1:numel(cci)
 	[~,vdx] = ismember(lower(cci{kk}),c01);
 	if vdx
@@ -438,11 +458,11 @@ assert(all(varfun(@iscolumn, tbl, 'OutputFormat','uniform')),...
 assert(all(varfun(@(x)isnumeric(x)||islogical(x), tbl, 'OutputFormat','uniform')),...
 	sprintf('SC:matEspresso:%sIn:ColumnNotNumericNorLogical',pfx),...
 	'Table variable has wrong type.\nAll variables of table <%sIn> must be numeric or logical',pfx);
-out = table2array(varfun(@uint8, tbl, 'OutputFormat','table'));
+out = table2array(varfun(@int8, tbl, 'OutputFormat','table'));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meTable2Matrix
-function out = meMatrix2uint8(pfx,arr,mxv)
-% Convert from numeric/logical matrix to UINT8 matrix.
+function out = meMatrix2int8(pfx,arr,mxv)
+% Convert from numeric/logical matrix to INT8 matrix.
 assert(ndims(arr)<3,...
 	sprintf('SC:matEspresso:%sIn:NotMatrix',pfx),...
 	'Input <%sIn> must be a matrix or a table.',pfx) %#ok<ISMAT>
@@ -452,9 +472,9 @@ assert(isnumeric(arr)||islogical(arr),...
 assert(all(ismember(arr(:),0:mxv)),...
 	sprintf('SC:matEspresso:%sIn:InvalidValues',pfx),...
 	'Input <%sIn> must contain only values from 0 to %d.',pfx,mxv)
-out = uint8(arr);
+out = int8(arr);
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meMatrix2uint8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meMatrix2int8
 function stpo = meOptions(stpo,opts)
 % Options check: only supported fieldnames with suitable option values.
 %

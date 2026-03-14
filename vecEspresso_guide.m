@@ -27,8 +27,8 @@
 % A truth-vector is a row vector of length $2^N$ that specifies which
 % binary numbers return TRUE for a Boolean function with $N$ independent-
 % variables. Position $k$ in the vector gives the dependent-variable value
-% (true/false,DC) when the independent-variables are the binary number $k$
-% written using exactly those $N$ bits, e.g. k=2 -> 10 (2 bits).
+% (true/false,don't-care/DC) when the independent-variables are the binary
+% number $k$ written using exactly those $N$ bits, e.g. k=2 -> 10 (2 bits).
 %
 % For example, a 4-element truth-vector has 2-bits/independent-variables:
 %
@@ -57,10 +57,10 @@
 %
 % The four outputs are explained in detail below, and here briefly:
 %
-% * |Bins|: covering patterns
-% * |inps|: number of logic gate inputs needed for implementation
+% * |Bins|: the covering patterns
+% * |inps|: the logical gate complexity of the minimized function
 % * |Nums|: which truth-table positions each pattern covers (0-indexed)
-% * |ott|: minimized output truth-vector
+% * |ott|: the minimized output truth-vector
 %
 % For example, a 2-independent-variable function that is true at positions 1 and 3:
 [Bins,inps,Nums,ott] = vecEspresso('0101')
@@ -79,21 +79,21 @@
 %
 % Don't-care (DC) values indicate positions where the function value
 % is unspecified and can be chosen to simplify the minimization.
-% By default, |vecEspresso| consumes don't-cares during minimization.
+% By default, |vecEspresso| consumes DCs during minimization.
 %
-% In this example the output |ott| has consumed the don't-cares (positions
+% In this example the output |ott| has consumed the DCs (positions
 % 2 and 3) by setting them to '0' to create a simpler covering pattern:
 [Bins,inps,Nums,ott] = vecEspresso('01--')
 %% Don't-Care Preservation
 %
-% The |preserveDC| option controls whether don't-cares are consumed
-% or preserved in the output truth-vector. Use |preserveDC=true| when you
-% need to distinguish between "known false" and "unspecified", such as
-% when iteratively refining a truth table or when documenting which
-% don't-cares were actually used in minimization.
+% The |preserveDC| option controls whether DCs are consumed or preserved
+% in the output truth-vector. Use |preserveDC=true| when you need to
+% distinguish between "known false" and "unspecified", such as when
+% iteratively refining a truth table or when documenting which DCs were
+% actually used in minimization.
 %
-% In this example |ott| preserves the original don't-care positions,
-% only updating positions that are actually covered by the minimization:
+% In this example |ott| preserves the original DC positions, only
+% updating positions that are actually covered by the minimization:
 [Bins,inps,Nums,ott] = vecEspresso('01--', 'preserveDC',true)
 %% Larger Truth-Vectors
 %
@@ -116,14 +116,14 @@ vecEspresso('01011010')
 %% Output 1: |Bins|
 %
 % The |Bins| output contains the covering patterns as a character matrix
-% (for char/string input) or |uint8| matrix (for numeric/logical input).
+% (for char/string input) or |int8| matrix (for numeric/logical input).
 % Each row represents one product term in the minimized expression.
 %
 % The values in |Bins| are:
 %
 % * |'0'| or 0: independent-variable must be false
 % * |'1'| or 1: independent-variable must be true
-% * |'-'| or 2: don't-care (independent-variable is not constrained)
+% * |'-'| or 2: independent-variable is not constrained (don't care / DC)
 %
 % The column order follows |minTruthtable| convention where column 1
 % is the most significant independent-variable (i.e. MSB of the binary
@@ -137,15 +137,15 @@ vecEspresso('01011010')
 Bins = vecEspresso('0000111100110011')
 %% Output 2: |inps|
 %
-% The |inps| output estimates the number of logic gate inputs required for
+% The |inps| output estimates the number of logic gate-inputs required for
 % a sum-of-products implementation. To provide a rough measure of 
 % PLA-circuit implementation complexity it counts:
 %
-% * The number of literals in each product term (ignoring single-literal terms)
-% * One input per product term for the final OR gate (if multiple terms exist)
+% * The number of literals in multi-literal product terms (AND gate-inputs),
+% * One gate-input per product term for the OR gate (if 2+ terms exist).
 %
-% This metric helps estimate the hardware cost or implementation complexity.
-% Lower |inps| values indicate simpler logic circuits requiring fewer gates.
+% This metric estimates PLA-circuit implementation complexity. Lower |inps|
+% values indicate simpler logic circuits requiring fewer connections.
 %
 % In this example, pattern '011' has 3 literals, pattern '1-0' has 2 literals,
 % and with 2 patterns we need a 2-input OR gate, giving inps=7 (3 + 2 + 2):
@@ -157,7 +157,7 @@ Bins = vecEspresso('0000111100110011')
 % covers. This connection between patterns and covered positions is useful for:
 %
 % * Verifying complete coverage of all true positions
-% * Understanding which input combinations activate each term
+% * Understanding which independent-variable combinations activate each term
 % * Debugging unexpected minimization results
 %
 % In this example, the pattern '1-' covers truth-table positions 2 and 3
@@ -166,8 +166,8 @@ Bins = vecEspresso('0000111100110011')
 %% Output 4: |ott|
 %
 % The |ott| output is the reconstructed truth-vector showing which
-% positions are covered by the minimized expression. By default,
-% don't-cares are consumed (set to '0' or '1'):
+% positions are covered by the minimized expression.
+% By default, DCs are consumed (i.e. are set to '0' or '1'):
 [Bins,inps,Nums,ott] = vecEspresso('01--1001')
 %% Output 5: |expr|
 %
@@ -201,13 +201,13 @@ debug.time        % Timing information
 % * Quine-McCluskey: Aggressive - maximally absorbs DCs into larger terms
 %
 % This leads to systematically different (but equally valid) results
-% when don't-cares are present.
+% when DCs are present.
 %
-% Consider a truth-vector with don't-cares at positions 3 and 6. Here
-% |minTruthtable| creates the pattern |'01-'| which absorbs the don't-care
-% at position 3 to cover both positions 2 and 3, producing |ottM = '01110100'|.
+% Consider a truth-vector with DCs at positions 3 and 6. Here
+% |minTruthtable| creates the pattern |'01-'| which absorbs the DC at
+% position 3 to cover both positions 2 and 3, producing |ottM = '01110100'|.
 % In contrast, |vecEspresso| uses the more specific pattern |'010'| that
-% covers only position 2 without absorbing the don't-care, producing 
+% covers only position 2 without absorbing the DC, producing 
 % |ottE = '01100100'|. Both approaches produce valid minimal forms with
 %  similar complexity (i.e. |inpsM=6| vs |inpsE=7|), the difference reflects
 % algorithmic philosophy rather than one being superior to the other.
@@ -225,10 +225,13 @@ tt = '011-01-0';
 % * The same four outputs (|Bins|, |inps|, |Nums|, |ott|),
 % * Input |tt| may be character, string, numeric, or logical.
 %
-% The output type of |Bins| and |ott| match the input type where practical:
+% The output class of |Bins| and |ott| match the input class where practical:
 %
-% * |tt| numeric/logical vector -> output |uint8| vector (using values 0, 1, and 2),
-% * |tt| character vector -> output character vector (using '0', '1', and '-'),
+% * |tt| numeric/logical vector -> output |int8| vector (using values 0, 1, and 2),
+% * |tt| char vector or string scalar -> output same class (using '0', '1', and '-'),
+% * Note that |minTruthtable| always returns char regardless of input class.
+% * DCs in numeric/logical |tt| must be exactly value 2 (not just
+%   non-zero/non-one values as |minTruthtable| permits).
 %
 % *|vecEspresso| does not support:*
 %
@@ -237,7 +240,7 @@ tt = '011-01-0';
 %
 % *|vecEspresso| additional features:*
 %
-% * |'preserveDC'| option to control don't-care handling,
+% * |'preserveDC'| option to control don't-care (DC) handling,
 % * All |matEspresso| options (e.g. |'Dexact'|, |'Efast'|, etc.),
 % * Fifth output |debug| with diagnostic information,
 % * Supports numeric, logical, and string classes for input & output.
@@ -268,7 +271,7 @@ tt = '011-01-0';
 % equivalent) minimal forms when:
 %
 % * Multiple optimal solutions exist (common in Boolean minimization)
-% * Don't-cares are present (different absorption strategies)
+% * Don't-cares (DCs) are present (different absorption strategies)
 % * Tie-breaking choices differ between algorithms
 %
 % All differences represent valid minimal or near-minimal solutions.
@@ -277,17 +280,17 @@ tt = '011-01-0';
 %
 % * Speed for large problems
 % * Heuristic efficiency
-% * Conservative don't-care usage
+% * Conservative don't-care (DC) usage
 %
 % *|minTruthtable| prioritizes:*
 %
 % * Exact optimality (when using 'e' flag)
 % * Maximal term coverage
-% * Aggressive don't-care absorption
+% * Aggressive don't-care (DC) absorption
 %
-% For problems with don't-cares or multiple optimal solutions, results may
-% differ in how DCs are handled (both being valid minimal forms, in this
-% case Espresso found a minimal form with slightly higher complexity):
+% For problems with DCs or multiple optimal solutions, results may differ
+% in how DCs are handled (both being valid minimal forms. For example, in
+% this case Espresso found a minimal form with slightly higher complexity):
 tt = '01--1001';
 [BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
 [BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)

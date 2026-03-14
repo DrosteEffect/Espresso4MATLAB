@@ -173,10 +173,10 @@ indOut = matEspresso(indIn,depIn)
 % Each row represents one implicant/pattern.
 % The output type matches the input type where practical:
 %
-% * input numeric/logical matrix -> output |uint8| matrix (using values 0, 1, and 2),
+% * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, and 2),
 % * input categorical matrix -> output categorical matrix (using option |outCats|),
 % * input character matrix -> output character matrix (using '0', '1', and '-'),
-% * input table -> table output with |uint8| columns/variables (as above).
+% * input table -> table output with |int8| columns/variables (as above).
 %
 % The above examples show |indOut| output.
 %
