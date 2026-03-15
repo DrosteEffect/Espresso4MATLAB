@@ -13,12 +13,13 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %   matEspresso(indIn,depIn,<options>)
 %   [indOut,depOut,expr,debug] = matEspresso(...)
 %
-% When called with one argument, indIn is interpreted as the true cases
-% for a single dependent-variable - each listed row represents a true case,
+% When called with one argument <indIn> is interpreted as the true cases
+% for a single dependent-variable (each listed row represents a true case)
 % any other (not provided) row combinations are implicitly false cases.
+% The 2nd input <depIn> may be [] in order to use any optional arguments.
 %
-% When called with two arguments, indIn contains all independent-
-% variables and depIn contains all dependent-variables for the truth table.
+% When called with two arguments <indIn> contains all independent-variables
+% and <depIn> contains all dependent-variables for the truth table.
 %
 %% Terminology %%
 %
@@ -35,8 +36,8 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 % Field names are case-insensitive. Text values preserve their case.
 % The following options are supported (**=default value):
 %
-% Field    | Permitted | Description
-% Name:    | Values:   | (cmd -EspressoCommand)
+% Field    | Permitted | Description:
+% Name:    | Values:   | (and where relevant also the Espresso <command>)
 % ---------|-----------|--------------------------------------------------------
 % exePath  | []**      | Path to the Espresso executable, char vector or
 %          | path text | string scalar (automagic detection if empty).
@@ -51,29 +52,29 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %          |           | By default these are {'off','on','DC'}. A fourth
 %          |           | category 'NA' is always appended to <depOut>.
 % ---------|-----------|--------------------------------------------------------
-% rmTemp   | false     | Leaves the temp .PLA file (faster, OS/user must delete).
-%          | true**    | Deletes the temp .PLA file (slower).
+% rmTemp   | true**    | Deletes the temp .PLA file (slower).
+%          | false     | Leaves the temp .PLA file (faster, OS/user must delete).
 % ---------|-----------|--------------------------------------------------------
 % simplify | false**   | Return Espresso's sum-of-products <expr> directly.
 %          | true      | Return <expr> after symbolic simplification
 %          |           | (requires the Symbolic Math Toolbox).
 % ---------|-----------|--------------------------------------------------------
 % Dcheck   | false**   | No consistency check.
-%          | true      | Use -Dcheck command for consistency checking.
+%          | true      | Use <-Dcheck> for consistency checking.
 % ---------|-----------|--------------------------------------------------------
 % Dexact   | false**   | Use heuristic minimization (faster).
-%          | true      | Use exact minimization (cmd -Dexact, slower but optimal).
+%          | true      | Use <-Dexact> for exact minimization (slower but optimal).
 % ---------|-----------|--------------------------------------------------------
-% Dopo     | false**   | Disable phase assignment optimization.
-%          | true      | Enable phase assignment optimization (cmd -Dopo).
+% Dopo     | false**   | No phase assignment optimization.
+%          | true      | Use <-Dopo> to enable phase assignment optimization.
 % ---------|-----------|--------------------------------------------------------
-% Dpair    | false**   | Disable pair minimization.
-%          | true      | Enable pair minimization (cmd -Dpair).
+% Dpair    | false**   | No pair minimization.
+%          | true      | Use <-Dpair> to enable pair minimization
 % ---------|-----------|--------------------------------------------------------
 % Efast    | false**   | Use normal speed.
-%          | true      | Use fast mode (cmd -efast, conflicts with Dexact=true).
+%          | true      | Use <-efast> for fast mode (conflicts with Dexact=true).
 % ---------|-----------|--------------------------------------------------------
-% Eout     | 'f'**     | Output set (cmd -o): 'f' (true-set), 'd' (DC-set),
+% Eout     | 'f'**     | Output set <-o>: 'f' (true-set), 'd' (DC-set),
 %          | 'd', 'fr',| 'r' (false-set), or any combination in that order.
 %          | 'fdr', etc| Controls which covering patterns are returned.
 % ---------|-----------|--------------------------------------------------------
@@ -143,7 +144,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %            per dependent-variable, separated by newlines. Uses MATLAB
 %            syntax (~, &, |) with parenthesized product terms.
 %   debug  = ScalarStruct containing detailed information about the run,
-%            including timing, raw PLA data, statistics, and options used.
+%            including timing, raw PLA data, and options used.
 %
 %% Dependencies %%
 %
@@ -222,7 +223,7 @@ elseif ischar(depIn)
 	otyp = 'char';
 	assert(all(ismember(depIn(:),'012345-?~')),...
 		'SC:matEspresso:depIn:InvalidCharacters',...
-		'Input <depIn> must only contain %s characters.',fErr('012345~-?'))
+		'Input <depIn> must only contain %s characters.',fErr('012345-?~'))
 	depIn(depIn=='~') = '5';
 	depIn = int8(depIn)-int8('0');
 	depIn(~ismember(depIn,0:5)) = 2;
@@ -249,7 +250,14 @@ debug.raw.depIn = depIn;
 indCnt = size(indIn,2);
 depCnt = size(depIn,2);
 %
-stpo = meMakeNames(stpo, indCnt, depCnt);
+stpo = meMakeNames(stpo, indCnt,depCnt);
+%
+assert(numel(stpo.indNames)==indCnt,...
+	'SC:matEspresso:indNames:WrongLength',...
+	'Option <indNames> must have one name per column of <indIn>')
+assert(numel(stpo.depNames)==depCnt,...
+	'SC:matEspresso:depNames:WrongLength',...
+	'Option <depNames> must have one name per column of <depIn>')
 %
 stpo.Eout = lower(stpo.Eout);
 % NOTE: '' correctly fails! REGEXP returns [] for a zero-length match,
@@ -264,19 +272,20 @@ debug.options.user = opts;
 debug.options.used = stpo;
 %
 %% Short-circuit: all outputs are NA, nothing for Espresso to minimize %%
-if all(depIn(:) == 5)
-    indOut = zeros(0,indCnt, 'int8');
-    depOut = zeros(0,depCnt, 'int8');
-    debug.raw.indOut = indOut;
-    debug.raw.depOut = depOut;
-    if nargout > 2
-        expr = meMakeExpr(indOut, depOut, stpo.indNames, stpo.depNames);
-        if stpo.simplify
-            expr = meSymSimpler(expr, stpo.indNames);
-        end
-    end
-    debug.time.(mfilename) = toc(ticH);
-    return
+if all(depIn(:)==5)
+	indOut = zeros(0,indCnt, 'int8');
+	depOut = zeros(0,depCnt, 'int8');
+	debug.raw.indOut = indOut;
+	debug.raw.depOut = depOut;
+	if nargout>2
+		expr = meMakeExpr(indOut, depOut, stpo.indNames, stpo.depNames);
+		if stpo.simplify
+			expr = meSymSimpler(expr, stpo.indNames);
+		end
+	end
+	[indOut,depOut] = meOutType(otyp, indOut,depOut, stpo.indNames,stpo.depNames, stpo.outCats);
+	debug.time.(mfilename) = toc(ticH);
+	return
 end
 %
 %% PLA File %%
@@ -388,25 +397,13 @@ debug.raw.indOut = indOut;
 debug.raw.depOut = depOut;
 %
 if nargout>2
-	expr = meMakeExpr(indOut, depOut, stpo.indNames, stpo.depNames);
+	expr = meMakeExpr(indOut,depOut, stpo.indNames,stpo.depNames);
 	if stpo.simplify
 		expr = meSymSimpler(expr, stpo.indNames);
 	end
 end
 %
-switch otyp
-	case 'cat'
-		indOut = categorical(indOut, 0:2   ,stpo.outCats, 'Protected',true);
-		stpo.outCats{4} = 'NA';
-		depOut = categorical(depOut,[0:2,5],stpo.outCats, 'Protected',true);
-	case 'tbl'
-		indOut = array2table(indOut, 'VariableNames',stpo.indNames);
-		depOut = array2table(depOut, 'VariableNames',stpo.depNames);
-	case 'char'
-		indOut = char('0'+indOut); indOut(~ismember(indOut,'01')) = '-';
-		depOut = char('0'+depOut); depOut(~ismember(depOut,'015')) = '-';
-		depOut(depOut=='5') = '~';
-end
+[indOut,depOut] = meOutType(otyp, indOut,depOut, stpo.indNames,stpo.depNames, stpo.outCats);
 %
 if depCnt>1 && nargout<2
 	warning('SC:matEspresso:depOut:MultipleDependentYetSingleOutput',...
@@ -417,6 +414,26 @@ debug.time.(mfilename) = toc(ticH);
 %
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspresso
+function [indOut,depOut] = meOutType(otyp, indOut,depOut, indNames,depNames, outCats)
+switch otyp
+	case 'cat'
+		indOut = categorical(indOut, 0:2   ,outCats, 'Protected',true);
+		outCats{4} = 'NA';
+		depOut = categorical(depOut,[0:2,5],outCats, 'Protected',true);
+	case 'tbl'
+		indOut = array2table(indOut, 'VariableNames',indNames);
+		depOut = array2table(depOut, 'VariableNames',depNames);
+	case 'char'
+		indOut = char('0'+indOut); indOut(~ismember(indOut,'01')) = '-';
+		depOut = char('0'+depOut); depOut(~ismember(depOut,'015')) = '-';
+		depOut(depOut=='5') = '~';
+	otherwise
+		assert(strcmpi(otyp,'int8'))
+		assert(isa(indOut,'int8'))
+		assert(isa(depOut,'int8'))
+end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meOutType
 function arr = meNs2c(arr)
 % If string scalar then extract the character vector,
 % If string array then convert to cell array of char vectors,

@@ -42,7 +42,7 @@ classdef TempFileCleanup < handle
 		end
 	end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TempFileGuard
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TempFileCleanup
 function txt = toCharVec(txt)
 if isa(txt,'string') && isscalar(txt)
 	txt = txt{1};

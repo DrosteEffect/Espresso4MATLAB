@@ -33,7 +33,7 @@
 % For example, a 4-element truth-vector has 2-bits/independent-variables:
 %
 %   tt = '1010'                               tt ↓
-%                                                
+%
 %   Position 0 -> binary 00 -> defined as true  '1'
 %   Position 1 -> binary 01 -> defined as false '0'
 %   Position 2 -> binary 10 -> defined as true  '1'
@@ -55,21 +55,23 @@
 %     true: '1'
 %       DC: '2' == '-' == '?'
 %
-% The four outputs are explained in detail below, and here briefly:
+% The outputs are explained in detail below, and here briefly:
 %
 % * |Bins|: the covering patterns
-% * |inps|: the logical gate complexity of the minimized function
+% * |inps|: the logical gate complexity of the minimized output
 % * |Nums|: which truth-table positions each pattern covers (0-indexed)
 % * |ott|: the minimized output truth-vector
+% * |expr|: a boolean expression of the minimized output
+% * |debug|: information about the function evaluation
 %
 % For example, a 2-independent-variable function that is true at positions 1 and 3:
-[Bins,inps,Nums,ott] = vecEspresso('0101')
+[Bins,inps,Nums,ott,expr] = vecEspresso('0101')
 %% Input: Numeric or Logical
 %
 % Numeric and logical vectors are accepted using these values:
 %
 %    false: 0 == false
-%     true: 1 == true  
+%     true: 1 == true
 %       DC: 2
 %
 % For example, a 2-independent-variable function that is true at positions 1 and 3:
@@ -81,8 +83,8 @@
 % is unspecified and can be chosen to simplify the minimization.
 % By default, |vecEspresso| consumes DCs during minimization.
 %
-% In this example the output |ott| has consumed the DCs (positions
-% 2 and 3) by setting them to '0' to create a simpler covering pattern:
+% In this example the output |ott| has consumed the DCs (positions 2 & 3)
+% by resolving them as needed to produce the simpler single-term result:
 [Bins,inps,Nums,ott] = vecEspresso('01--')
 %% Don't-Care Preservation
 %
@@ -92,8 +94,9 @@
 % iteratively refining a truth table or when documenting which DCs were
 % actually used in minimization.
 %
-% In this example |ott| preserves the original DC positions, only
-% updating positions that are actually covered by the minimization:
+% In this example |ott| preserves the original DC positions unconditionally:
+% covered non-DC positions are set to true, while DC positions are always
+% left unchanged regardless of coverage:
 [Bins,inps,Nums,ott] = vecEspresso('01--', 'preserveDC',true)
 %% Larger Truth-Vectors
 %
@@ -111,7 +114,7 @@
 %
 % When called without output arguments, |vecEspresso| displays a formatted
 % summary including a Karnaugh map (for 3-4 independent-variables), all
-% covering terms, the Boolean expression, and statistics:
+% covering terms, the Boolean expression, and the complexity metric:
 vecEspresso('01011010')
 %% Output 1: |Bins|
 %
@@ -138,7 +141,7 @@ Bins = vecEspresso('0000111100110011')
 %% Output 2: |inps|
 %
 % The |inps| output estimates the number of logic gate-inputs required for
-% a sum-of-products implementation. To provide a rough measure of 
+% a sum-of-products implementation. To provide a rough measure of
 % PLA-circuit implementation complexity it counts:
 %
 % * The number of literals in multi-literal product terms (AND gate-inputs),
@@ -152,8 +155,8 @@ Bins = vecEspresso('0000111100110011')
 [Bins,inps] = vecEspresso('00011010')
 %% Output 3: |Nums|
 %
-% The |Nums| output is a cell array where each cell Nums{k} corresponds to 
-% row k in |Bins|, showing which 0-indexed truth-table positions that pattern 
+% The |Nums| output is a cell array where each cell Nums{k} corresponds to
+% row k in |Bins|, showing which 0-indexed truth-table positions that pattern
 % covers. This connection between patterns and covered positions is useful for:
 %
 % * Verifying complete coverage of all true positions
@@ -171,8 +174,7 @@ Bins = vecEspresso('0000111100110011')
 [Bins,inps,Nums,ott] = vecEspresso('01--1001')
 %% Output 5: |expr|
 %
-% A character vector containing one Boolean expression per
-% dependent-variable, separated by newlines (see |matEspresso|):
+% A character vector containing one Boolean expression (see |matEspresso|):
 [~,~,~,~,expr] = vecEspresso('01--1001')
 %% Output 6: |debug|
 %
@@ -201,28 +203,19 @@ debug.time        % Timing information
 % * Quine-McCluskey: Aggressive - maximally absorbs DCs into larger terms
 %
 % This leads to systematically different (but equally valid) results
-% when DCs are present.
-%
-% Consider a truth-vector with DCs at positions 3 and 6. Here
-% |minTruthtable| creates the pattern |'01-'| which absorbs the DC at
-% position 3 to cover both positions 2 and 3, producing |ottM = '01110100'|.
-% In contrast, |vecEspresso| uses the more specific pattern |'010'| that
-% covers only position 2 without absorbing the DC, producing 
-% |ottE = '01100100'|. Both approaches produce valid minimal forms with
-%  similar complexity (i.e. |inpsM=6| vs |inpsE=7|), the difference reflects
-% algorithmic philosophy rather than one being superior to the other.
+% when DCs are present:
 tt = '011-01-0';
-[BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
-[BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
+[~,~,~,ottM] = minTruthtable(tt)
+[~,~,~,ottE,exprE] = vecEspresso(tt)
 %% |minTruthtable| Compatibility
 %
-% |vecEspresso| is designed as a drop-in replacement for |minTruthtable|,
+% |vecEspresso| is generally a drop-in replacement for |minTruthtable|,
 % with some key differences.
 %
 % *|vecEspresso| supports:*
 %
 % * Core |minTruthtable| functionality (truth-vector minimization),
-% * The same four outputs (|Bins|, |inps|, |Nums|, |ott|),
+% * The first four outputs (|Bins|, |inps|, |Nums|, |ott|),
 % * Input |tt| may be character, string, numeric, or logical.
 %
 % The output class of |Bins| and |ott| match the input class where practical:
@@ -242,7 +235,8 @@ tt = '011-01-0';
 %
 % * |'preserveDC'| option to control don't-care (DC) handling,
 % * All |matEspresso| options (e.g. |'Dexact'|, |'Efast'|, etc.),
-% * Fifth output |debug| with diagnostic information,
+% * Fifth output |expr| with boolean expression,
+% * Sixth output |debug| with diagnostic information,
 % * Supports numeric, logical, and string classes for input & output.
 %
 % *|vecEspresso| performance:*
@@ -257,7 +251,7 @@ tt = '011-01-0';
 % * Truth tables larger than 2^15 elements,
 % * Speed is more important than guaranteed optimality,
 % * Working with very sparse truth tables (few true positions).
-% 
+%
 % *When to use |minTruthtable|:*
 %
 % * Need guaranteed optimal solution (use with 'e' flag),
@@ -288,16 +282,20 @@ tt = '011-01-0';
 % * Maximal term coverage
 % * Aggressive don't-care (DC) absorption
 %
-% For problems with DCs or multiple optimal solutions, results may differ
-% in how DCs are handled (both being valid minimal forms. For example, in
-% this case Espresso found a minimal form with slightly higher complexity):
-tt = '01--1001';
+% Consider the truth-vector from the section "Espresso vs. Quine-McCluskey".
+% Here |minTruthtable| creates the pattern |'01-'| which absorbs the DC at
+% position 3 to cover both positions 2 and 3, producing |ottM='01110100'|.
+% In contrast, |vecEspresso| uses the patterns '-10' and '-01' that cover
+% positions {2,6} and {1,5} respectively, leaving the DCs at positions 3
+% and 6 uncovered, producing |ottE='01100110'|. Both approaches produce
+% valid minimal forms with the same (or similar) complexity, the difference
+% reflects algorithmic philosophy rather than one being superior to the other.
 [BinsM,inpsM,NumsM,ottM] = minTruthtable(tt)
 [BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
 %% Example: Large Truth-Table Performance
 %
 % |vecEspresso| excels with larger problems. This would be impractical for
-% |minTruthtable| but |vecEspresso| handles it efficiently using 
+% |minTruthtable| but |vecEspresso| handles it efficiently using
 % |Espresso|'s heuristic algorithms.
 % For example, a 16-independent-variable truth-table (65,536 elements):
 %

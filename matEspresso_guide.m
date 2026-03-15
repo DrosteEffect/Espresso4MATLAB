@@ -53,11 +53,10 @@
 % For example two independent-variables and one (implicit) dependent-variable:
 indIn = [true,false; true,true]
 indOut = matEspresso(indIn)
-%
 %% Both |indIn| and |depIn| Arguments
 %
-% With two input arguments, |depIn| explicitly defines the required 
-% true/false/don't-care values for each row of the truth table.
+% With two input arguments, |depIn| explicitly defines the required
+% true/false/DC/NA values for each row of the truth table.
 % Note that |indIn| and |depIn| must have the same number of rows.
 % Each column of |indIn| represents one independent-variable, whereas
 % each column of |depIn| represents one dependent-variable.
@@ -132,8 +131,8 @@ indOut = matEspresso(indIn,depIn)
 %      NA: '5' == '~' == 'NA' == 'notapplicable'
 %
 % By default the output matrices use categories |'off'|, |'on'|, and
-% |'DC'|, or alternative categories may be provided. Note: the category
-% |'NA'| is always added automatically.
+% |'DC'|, or alternative categories may be provided.
+% Note: the category |'NA'| is always added automatically to |depOut|.
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = categorical({'On','DC';'On','On';'Off','Off'})
@@ -176,7 +175,7 @@ indOut = matEspresso(indIn,depIn)
 % Each row represents one implicant/pattern.
 % The output type matches the input type where practical:
 %
-% * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, and 2),
+% * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, & 2),
 % * input categorical matrix -> output categorical matrix (using option |outCats|),
 % * input character matrix -> output character matrix (using '0', '1', and '-'),
 % * input table -> table output with |int8| columns/variables (as above).
@@ -187,7 +186,8 @@ indOut = matEspresso(indIn,depIn)
 %
 % A matrix/table of the same row count as |indOut| indicating which
 % patterns cover which dependent-variables.
-% |depOut| returns the same classes and values as |indOut| described above.
+% |depOut| returns the same classes and values as |indOut| described above,
+% plus additionally the value 5/~/NA (for not applicable from |depIn| ).
 %
 % Note: If multiple dependent-variables are detected but you request only
 % one output argument then |matEspresso| issues a warning!
@@ -199,7 +199,7 @@ depIn = [1,0; 0,1; 0,2]
 %
 % A character vector containing one Boolean expression per
 % dependent-variable, separated by newlines. Expressions use MATLAB logical
-% syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and 
+% syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
 % Product terms are parenthesized when they contain multiple literals.

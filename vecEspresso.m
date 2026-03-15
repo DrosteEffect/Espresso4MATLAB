@@ -65,10 +65,10 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %
 %   % String input/output:
 %   >> [Bins,~,~,ott,expr] = vecEspresso("1--01100")
-%   Bins = 
+%   Bins =
 %       "-00"
 %       "10-"
-%   ott = 
+%   ott =
 %       "10001100"
 %   expr =
 %       "Z = (~B & ~C) | (A & ~B)"
@@ -246,8 +246,8 @@ if ttPwr>0 && nTerms>0
 	tVec = uint64(rVec(:));
 	allX = zeros(ttLen,ttPwr,'int8');
 	for bit = ttPwr:-1:1 % (LSB):-1:(MSB)
-    	allX(:,bit) = bitand(tVec,1)~=0;
-    	tVec = bitshift(tVec,-1);
+		allX(:,bit) = bitand(tVec,1)~=0;
+		tVec = bitshift(tVec,-1);
 	end
 	for ii = 1:nTerms
 		indRow = indOut(ii,:);
@@ -268,30 +268,24 @@ end
 %
 %% Build Outputs %%
 %
-if stpo.preserveDC % only update covered positions
-	if ischar(ttInp) || ~nargout
-		ott = ttTxt;
-		tmp = '1';
-	else
-		ott = ttNum;
-		tmp = 1;
-	end
-	coveredIdx = false(1,ttLen);
-	for ii = 1:nTerms
-		coveredIdx(Nums{ii}+1) = true;
-	end
-	ott(coveredIdx) = tmp;
-elseif ischar(ttInp) || ~nargout
+if ischar(ttInp) || ~nargout
+	dcv = '-';
 	ott = ttTxt;
 	ott(:) = '0';
 	for ii = 1:nTerms
 		ott(Nums{ii}+1) = '1';
 	end
 else % numeric/logical
-	ott = 0*ttNum;
+	dcv = 2;
+	ott = ttNum;
+	ott(:) = 0;
 	for ii = 1:nTerms
 		ott(Nums{ii}+1) = 1;
 	end
+end
+%
+if stpo.preserveDC % restore DCs
+	ott(ttNum==2) = dcv;
 end
 %
 if ~nargout
@@ -327,7 +321,7 @@ if isa(arr,'string') && isscalar(arr)
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%ve1s2c
-	function veDisplayResults(expr,indOut,inps,Nums,ttTxt,ttOut,N)
+function veDisplayResults(expr,indOut,inps,Nums,ttTxt,ttOut,N)
 % Display results in minTruthtable format
 %
 % Karnaugh Map for 3 or 4 variables
@@ -370,7 +364,7 @@ fprintf('|\n| %s;\n|\n',expr)
 %
 % Summary statistics
 fprintf('| Logical complexity: %d inputs\n|\n',inps);
-fprintf('| Input  tt: "%s"\n',ttTxt);
+fprintf('|  Input tt: "%s"\n',ttTxt);
 fprintf('| Output tt: "%s"\n',ttOut);
 %
 end

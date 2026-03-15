@@ -162,7 +162,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <p>For example two independent-variables and one (implicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [true,false; true,true]
 indOut = matEspresso(indIn)
-<span class="comment">%</span>
 </pre>
 <pre class="codeoutput">indIn =
   2&times;2 logical array
@@ -173,7 +172,7 @@ indOut =
    1   2
 </pre>
 <h2 id="4">Both <tt>indIn</tt> and <tt>depIn</tt> Arguments</h2>
-<p>With two input arguments, <tt>depIn</tt> explicitly defines the required true/false/don't-care values for each row of the truth table. Note that <tt>indIn</tt> and <tt>depIn</tt> must have the same number of rows. Each column of <tt>indIn</tt> represents one independent-variable, whereas each column of <tt>depIn</tt> represents one dependent-variable.</p>
+<p>With two input arguments, <tt>depIn</tt> explicitly defines the required true/false/DC/NA values for each row of the truth table. Note that <tt>indIn</tt> and <tt>depIn</tt> must have the same number of rows. Each column of <tt>indIn</tt> represents one independent-variable, whereas each column of <tt>depIn</tt> represents one dependent-variable.</p>
 <p>For example two independent-variables and one (explicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [true,false; true,true; false,true; false,false]
 depIn = [true; true; false; false]
@@ -292,7 +291,7 @@ indOut =
    DC: <span class="string">'2'</span> == <span class="string">'-'</span> == <span class="string">'?'</span> == <span class="string">'DC'</span> == <span class="string">'dontcare'</span> == <span class="string">'maybe'</span>
    NA: <span class="string">'5'</span> == <span class="string">'~'</span> == <span class="string">'NA'</span> == <span class="string">'notapplicable'</span>
 </pre>
-<p>By default the output matrices use categories <tt>'off'</tt>, <tt>'on'</tt>, and <tt>'DC'</tt>, or alternative categories may be provided. Note: the category <tt>'NA'</tt> is always added automatically.</p>
+<p>By default the output matrices use categories <tt>'off'</tt>, <tt>'on'</tt>, and <tt>'DC'</tt>, or alternative categories may be provided. Note: the category <tt>'NA'</tt> is always added automatically to <tt>depOut</tt>.</p>
 <p>For example two independent-variables and one (explicit) dependent-variable:</p>
 <pre class="codeinput">indIn = categorical({<span class="string">'On'</span>,<span class="string">'DC'</span>;<span class="string">'On'</span>,<span class="string">'On'</span>;<span class="string">'Off'</span>,<span class="string">'Off'</span>})
 depIn = categorical({<span class="string">'On'</span>;<span class="string">'On'</span>;<span class="string">'Off'</span>})
@@ -344,7 +343,7 @@ indOut =
 <p>A simplified set of cover patterns over the independent-variables. Each row represents one implicant/pattern. The output type matches the input type where practical:</p>
 <div>
 <ul>
-<li>input numeric/logical matrix -&gt; output <tt>int8</tt> matrix (using values 0, 1, and 2),</li>
+<li>input numeric/logical matrix -&gt; output <tt>int8</tt> matrix (using values 0, 1, &amp; 2),</li>
 <li>input categorical matrix -&gt; output categorical matrix (using option <tt>outCats</tt>),</li>
 <li>input character matrix -&gt; output character matrix (using '0', '1', and '-'),</li>
 <li>input table -&gt; table output with <tt>int8</tt> columns/variables (as above).</li>
@@ -353,7 +352,7 @@ indOut =
 <p>The above examples show <tt>indOut</tt> output.</p>
 <h2 id="11">Output 2: <tt>depOut</tt>
 </h2>
-<p>A matrix/table of the same row count as <tt>indOut</tt> indicating which patterns cover which dependent-variables. <tt>depOut</tt> returns the same classes and values as <tt>indOut</tt> described above.</p>
+<p>A matrix/table of the same row count as <tt>indOut</tt> indicating which patterns cover which dependent-variables. <tt>depOut</tt> returns the same classes and values as <tt>indOut</tt> described above, plus additionally the value 5/~/NA (for not applicable from <tt>depIn</tt> ).</p>
 <p>Note: If multiple dependent-variables are detected but you request only one output argument then <tt>matEspresso</tt> issues a warning!</p>
 <pre class="codeinput">indIn = [1,2,1; 1,1,0; 0,0,1]
 depIn = [1,0; 0,1; 0,2]
@@ -428,8 +427,8 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.087056
-    matEspresso: 0.091632
+       Espresso: 0.051353
+    matEspresso: 0.056018
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
@@ -511,11 +510,10 @@ ans =
 % For example two independent-variables and one (implicit) dependent-variable:
 indIn = [true,false; true,true]
 indOut = matEspresso(indIn)
-%
 %% Both |indIn| and |depIn| Arguments
 %
 % With two input arguments, |depIn| explicitly defines the required 
-% true/false/don't-care values for each row of the truth table.
+% true/false/DC/NA values for each row of the truth table.
 % Note that |indIn| and |depIn| must have the same number of rows.
 % Each column of |indIn| represents one independent-variable, whereas
 % each column of |depIn| represents one dependent-variable.
@@ -590,8 +588,8 @@ indOut = matEspresso(indIn,depIn)
 %      NA: '5' == '~' == 'NA' == 'notapplicable'
 %
 % By default the output matrices use categories |'off'|, |'on'|, and
-% |'DC'|, or alternative categories may be provided. Note: the category
-% |'NA'| is always added automatically.
+% |'DC'|, or alternative categories may be provided.
+% Note: the category |'NA'| is always added automatically to |depOut|.
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = categorical({'On','DC';'On','On';'Off','Off'})
@@ -634,7 +632,7 @@ indOut = matEspresso(indIn,depIn)
 % Each row represents one implicant/pattern.
 % The output type matches the input type where practical:
 %
-% * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, and 2),
+% * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, & 2),
 % * input categorical matrix -> output categorical matrix (using option |outCats|),
 % * input character matrix -> output character matrix (using '0', '1', and '-'),
 % * input table -> table output with |int8| columns/variables (as above).
@@ -645,7 +643,8 @@ indOut = matEspresso(indIn,depIn)
 %
 % A matrix/table of the same row count as |indOut| indicating which
 % patterns cover which dependent-variables.
-% |depOut| returns the same classes and values as |indOut| described above.
+% |depOut| returns the same classes and values as |indOut| described above,
+% plus additionally the value 5/~/NA (for not applicable from |depIn| ).
 %
 % Note: If multiple dependent-variables are detected but you request only
 % one output argument then |matEspresso| issues a warning!
