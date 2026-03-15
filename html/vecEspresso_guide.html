@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>vecEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-03-14">
+<meta name="DC.date" content="2026-03-15">
 <meta name="DC.source" content="vecEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -162,7 +162,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <h2 id="2">Truth-Vector Format</h2>
 <p>A truth-vector is a row vector of length <img src="vecEspresso_guide_eq18347343706772467662.png" alt="$2^N$" style="width:16px;height:13px;"> that specifies which binary numbers return TRUE for a Boolean function with <img src="vecEspresso_guide_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;"> independent- variables. Position <img src="vecEspresso_guide_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;"> in the vector gives the dependent-variable value (true/false,don't-care/DC) when the independent-variables are the binary number <img src="vecEspresso_guide_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;"> written using exactly those <img src="vecEspresso_guide_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;"> bits, e.g. k=2 -&gt; 10 (2 bits).</p>
 <p>For example, a 4-element truth-vector has 2-bits/independent-variables:</p>
-<pre class="language-matlab">tt = <span class="string">'1010'</span>                                  tt
+<pre class="language-matlab">tt = <span class="string">'1010'</span>                               tt <span class="string">&darr;</span>
 </pre>
 <pre class="language-matlab">Position <span class="string">0</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">00</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">true</span>  <span class="string">'1'</span>
 Position <span class="string">1</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">01</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">false</span> <span class="string">'0'</span>
@@ -426,16 +426,16 @@ debug.time        <span class="comment">% Timing information</span>
 <pre class="codeoutput">debug = 
   struct with fields:
 
+        raw: [1&times;1 struct]
     options: [1&times;1 struct]
        time: [1&times;1 struct]
      system: [1&times;1 struct]
-        raw: [1&times;1 struct]
 ans = 
   struct with fields:
 
-       Espresso: 0.055164
-    matEspresso: 0.057964
-    vecEspresso: 0.059455
+       Espresso: 0.22603
+    matEspresso: 0.23797
+    vecEspresso: 0.24521
 </pre>
 <h2 id="16">Interesting Edge-Cases</h2>
 <pre class="codeinput">[~,~,~,ott] = vecEspresso(<span class="string">'1111'</span>) <span class="comment">% Constant-true function, output remains true</span>
@@ -660,7 +660,7 @@ tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc
 </pre>
-<pre class="codeoutput">Elapsed time is 0.828665 seconds.
+<pre class="codeoutput">Elapsed time is 1.413310 seconds.
 </pre>
 <p class="footer">
 <br>
@@ -704,7 +704,7 @@ toc
 %
 % For example, a 4-element truth-vector has 2-bits/independent-variables:
 %
-%   tt = '1010'                                  tt
+%   tt = '1010'                               tt ↓
 %                                                
 %   Position 0 -> binary 00 -> defined as true  '1'
 %   Position 1 -> binary 01 -> defined as false '0'

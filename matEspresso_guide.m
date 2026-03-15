@@ -47,7 +47,8 @@
 % where the dependent-variable is true (any missing rows are implicitly
 % false cases). Each column of |indIn| represents one independent-variable.
 %
-% The output values are |0|=false, |1|=true, |2|=don't-care (DC).
+% The output values are |0|=false, |1|=true, |2|=don't-care (DC), and
+% |5|=not applicable (NA).
 %
 % For example two independent-variables and one (implicit) dependent-variable:
 indIn = [true,false; true,true]
@@ -72,16 +73,16 @@ indOut = matEspresso(indIn,depIn)
 %
 % A numeric |indIn| matrix supports the following three values:
 %
-%    false: 0
-%     true: 1
-%       DC: 2
+%   false: 0
+%    true: 1
+%      DC: 2
 %
 % A numeric |depIn| matrix supports the following six values:
 %
-%    false: 0 == 3
-%     true: 1 == 4
-%       DC: 2
-%   ignore: 5
+%   false: 0 == 3
+%    true: 1 == 4
+%      DC: 2
+%      NA: 5
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = [1,2; 1,1; 0,0]
@@ -106,10 +107,10 @@ indOut = matEspresso(indIn,depIn)
 %
 % A character |depIn| matrix supports the following nine characters:
 %
-%    false: '0' == '3'
-%     true: '1' == '4'
-%       DC: '2' == '-' == '?'
-%   ignore: '5' == '~'
+%   false: '0' == '3'
+%    true: '1' == '4'
+%      DC: '2' == '-' == '?'
+%      NA: '5' == '~'
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = ['1-';'11';'00']
@@ -119,18 +120,20 @@ indOut = matEspresso(indIn,depIn)
 %
 % A categorical |indIn| matrix supports the following case-insensitive categories:
 %
-%    false: '0' == 'off' == 'no' == 'false'
-%     true: '1' == 'on' == 'yes' == 'true'
-%       DC: '2' == '-' == '?' == 'dc' == 'dontcare' == 'maybe'
+%   false: '0' == 'off' == 'no' == 'false'
+%    true: '1' == 'on' == 'yes' == 'true'
+%      DC: '2' == '-' == '?' == 'DC' == 'dontcare' == 'maybe'
 %
 % A categorical |depIn| matrix supports the following case-insensitive categories:
 %
-%    false: '0' == '3' == 'off' == 'no' == 'false'
-%     true: '1' == '4' == 'on' == 'yes' == 'true'
-%       DC: '2' == '-' == '?' == 'dc' == 'dontcare' == 'maybe'
-%   ignore: '5' == '~'
+%   false: '0' == '3' == 'off' == 'no' == 'false'
+%    true: '1' == '4' == 'on' == 'yes' == 'true'
+%      DC: '2' == '-' == '?' == 'DC' == 'dontcare' == 'maybe'
+%      NA: '5' == '~' == 'NA' == 'notapplicable'
 %
-% By default the output matrices use categories |off|, |on|, and |DC|.
+% By default the output matrices use categories |'off'|, |'on'|, and
+% |'DC'|, or alternative categories may be provided. Note: the category
+% |'NA'| is always added automatically.
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = categorical({'On','DC';'On','On';'Off','Off'})

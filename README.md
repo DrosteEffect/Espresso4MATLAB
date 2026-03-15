@@ -16,7 +16,8 @@ This project exposes Espresso's minimization capabilities to MATLAB users while 
 
 - MATLAB wrappers for the `Espresso` executable
 - Boolean minimization from truth tables, matrices, or vectors
-- Support for _don’t care_ conditions
+- Support for _don’t care_ conditions (DC, `'-'`)
+- Support for _not applicable_ conditions (NA, `'~'`)
 - Automatic generation of minimized Boolean expressions
 - Optional inspection and debugging support
 - No manual PLA or temporary file handling required by the user
@@ -27,15 +28,15 @@ This project exposes Espresso's minimization capabilities to MATLAB users while 
 
 - `matEspressoGUI.m`: interactive GUI for exploring truth-table minimization using MATLAB `uitable` components.
 
-- `vecEspresso.m`: truth-vector interface built on top of `matEspresso`, providing drop-in compatibility with `minTruthtable` while scaling better to larger problems.
+- `vecEspresso.m`: truth-vector interface built on top of `matEspresso`, generally providing drop-in compatibility with `minTruthtable` while scaling better to larger problems.
 
-- `matEspresso_doc.m` & `vecEspresso_doc.m`: MATLAB `publish` documentation
+- `matEspresso_guide.m` & `vecEspresso_guide.m`: MATLAB `publish` documentation
 
 - `TempFileCleanup.m`: utility class for robust cleanup of temporary files created during `Espresso` execution.
 
 ## Requirements ##
 
-- MATLAB R2009b or later
+- MATLAB R2008b or later
 - An installed **Espresso** executable available on the system path
   - Reference implementation: <https://github.com/Gigantua/Espresso>
 
@@ -53,7 +54,7 @@ To avoid confusing conflicts with existing MATLAB terminology we define:
 
 ## Examples `matEspresso` ##
 
-Minimize one dependent-variable with three independent-variables:
+Minimize one dependent-variable (`Z`) with three independent-variables (`A`, `B`, `C`):
 
     >> indIn = [0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1];
     >> [indOut,depOut,expr] = matEspresso(indIn)
@@ -66,7 +67,7 @@ Minimize one dependent-variable with three independent-variables:
     expr =
          'Z = A | B'
     
-Minimize two dependent-variables with two independent-variables:
+Minimize two dependent-variables (`hello`, `world`) with two independent-variables (`A`, `B`):
 
     >> indIn = [0 0; 0 1; 1 0; 1 1];
     >> depIn = [0 0; 0 1; 1 0; 1 1];
@@ -81,7 +82,7 @@ Minimize two dependent-variables with two independent-variables:
          'hello = A
           world = B'
     
-Simplify/factorize one dependent-variable with three independent-variables:
+Simplify/factorize one dependent-variable (`Z`) with three independent-variables (`A`, `B`,`C`):
 
     >> indIn = [1 1 0; 1 0 1; 0 1 1];
     >> [~,~,expr] = matEspresso(indIn)

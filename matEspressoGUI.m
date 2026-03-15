@@ -159,12 +159,12 @@ megUpDate()
 			rSty = uistyle('BackgroundColor',[0.95,0.85,0.85]); % off
 			fSty = uistyle('BackgroundColor',[0.85,0.95,0.85]); % on
 			dSty = uistyle('BackgroundColor',[0.95,0.95,0.80]); % DC
-			iSty = uistyle('BackgroundColor',[0.88,0.88,0.88]); % ignored
+			iSty = uistyle('BackgroundColor',[0.88,0.88,0.88]); % NA
 		else % darkmode
 			rSty = uistyle('BackgroundColor',[0.25,0.15,0.15]); % off
 			fSty = uistyle('BackgroundColor',[0.15,0.25,0.15]); % on
 			dSty = uistyle('BackgroundColor',[0.25,0.25,0.12]); % DC
-			iSty = uistyle('BackgroundColor',[0.20,0.20,0.20]); % ignored
+			iSty = uistyle('BackgroundColor',[0.20,0.20,0.20]); % NA
 		end
 		%
 		uiC = {uit(1),uit(2),uot(1),uot(2)};
@@ -174,7 +174,7 @@ megUpDate()
 			megGuiStyle(uiC{kk},rSty,xxM{kk}==0) % off
 			megGuiStyle(uiC{kk},fSty,xxM{kk}==1) % on
 			megGuiStyle(uiC{kk},dSty,xxM{kk}==2) % DC
-			megGuiStyle(uiC{kk},iSty,xxM{kk}==5) % ignored
+			megGuiStyle(uiC{kk},iSty,xxM{kk}==5) % NA
 		end
 		drawnow()
 	end

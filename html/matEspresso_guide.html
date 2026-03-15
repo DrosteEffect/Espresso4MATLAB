@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>matEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-03-14">
+<meta name="DC.date" content="2026-03-15">
 <meta name="DC.source" content="matEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -158,7 +158,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </div>
 <h2 id="3">Only <tt>indIn</tt> Argument</h2>
 <p>With one input argument <tt>indIn</tt> is interpreted as the <b>true cases</b> for a single implicit dependent-variable, i.e. each row of <tt>indIn</tt> is a minterm where the dependent-variable is true (any missing rows are implicitly false cases). Each column of <tt>indIn</tt> represents one independent-variable.</p>
-<p>The output values are <tt>0</tt>=false, <tt>1</tt>=true, <tt>2</tt>=don't-care (DC).</p>
+<p>The output values are <tt>0</tt>=false, <tt>1</tt>=true, <tt>2</tt>=don't-care (DC), and <tt>5</tt>=not applicable (NA).</p>
 <p>For example two independent-variables and one (implicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [true,false; true,true]
 indOut = matEspresso(indIn)
@@ -198,14 +198,16 @@ indOut =
 <h2 id="5">Input Arguments: Numeric</h2>
 <p>The above example use logical matrices for <tt>indIn</tt>, but for extra control and versatility <tt>indIn</tt> supports several other input classes.</p>
 <p>A numeric <tt>indIn</tt> matrix supports the following three values:</p>
-<pre>  false: 0
-   true: 1
-     DC: 2</pre>
+<pre class="language-matlab">false: 0
+ true: 1
+   DC: 2
+</pre>
 <p>A numeric <tt>depIn</tt> matrix supports the following six values:</p>
-<pre>  false: 0 == 3
-   true: 1 == 4
-     DC: 2
- ignore: 5</pre>
+<pre class="language-matlab">false: 0 == 3
+ true: 1 == 4
+   DC: 2
+   NA: 5
+</pre>
 <p>For example two independent-variables and one (explicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [1,2; 1,1; 0,0]
 depIn = [1; 1; 0]
@@ -255,10 +257,11 @@ indOut =
    true: '1'
      DC: '2' == '-' == '?'</pre>
 <p>A character <tt>depIn</tt> matrix supports the following nine characters:</p>
-<pre>  false: '0' == '3'
-   true: '1' == '4'
-     DC: '2' == '-' == '?'
- ignore: '5' == '~'</pre>
+<pre class="language-matlab">false: <span class="string">'0'</span> == <span class="string">'3'</span>
+ true: <span class="string">'1'</span> == <span class="string">'4'</span>
+   DC: <span class="string">'2'</span> == <span class="string">'-'</span> == <span class="string">'?'</span>
+   NA: <span class="string">'5'</span> == <span class="string">'~'</span>
+</pre>
 <p>For example two independent-variables and one (explicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [<span class="string">'1-'</span>;<span class="string">'11'</span>;<span class="string">'00'</span>]
 depIn = [<span class="string">'1'</span>;<span class="string">'1'</span>;<span class="string">'0'</span>]
@@ -279,15 +282,17 @@ indOut =
 </pre>
 <h2 id="8">Input arguments: Categorical</h2>
 <p>A categorical <tt>indIn</tt> matrix supports the following case-insensitive categories:</p>
-<pre>  false: '0' == 'off' == 'no' == 'false'
-   true: '1' == 'on' == 'yes' == 'true'
-     DC: '2' == '-' == '?' == 'dc' == 'dontcare' == 'maybe'</pre>
+<pre class="language-matlab">false: <span class="string">'0'</span> == <span class="string">'off'</span> == <span class="string">'no'</span> == <span class="string">'false'</span>
+ true: <span class="string">'1'</span> == <span class="string">'on'</span> == <span class="string">'yes'</span> == <span class="string">'true'</span>
+   DC: <span class="string">'2'</span> == <span class="string">'-'</span> == <span class="string">'?'</span> == <span class="string">'DC'</span> == <span class="string">'dontcare'</span> == <span class="string">'maybe'</span>
+</pre>
 <p>A categorical <tt>depIn</tt> matrix supports the following case-insensitive categories:</p>
-<pre>  false: '0' == '3' == 'off' == 'no' == 'false'
-   true: '1' == '4' == 'on' == 'yes' == 'true'
-     DC: '2' == '-' == '?' == 'dc' == 'dontcare' == 'maybe'
- ignore: '5' == '~'</pre>
-<p>By default the output matrices use categories <tt>off</tt>, <tt>on</tt>, and <tt>DC</tt>.</p>
+<pre class="language-matlab">false: <span class="string">'0'</span> == <span class="string">'3'</span> == <span class="string">'off'</span> == <span class="string">'no'</span> == <span class="string">'false'</span>
+ true: <span class="string">'1'</span> == <span class="string">'4'</span> == <span class="string">'on'</span> == <span class="string">'yes'</span> == <span class="string">'true'</span>
+   DC: <span class="string">'2'</span> == <span class="string">'-'</span> == <span class="string">'?'</span> == <span class="string">'DC'</span> == <span class="string">'dontcare'</span> == <span class="string">'maybe'</span>
+   NA: <span class="string">'5'</span> == <span class="string">'~'</span> == <span class="string">'NA'</span> == <span class="string">'notapplicable'</span>
+</pre>
+<p>By default the output matrices use categories <tt>'off'</tt>, <tt>'on'</tt>, and <tt>'DC'</tt>, or alternative categories may be provided. Note: the category <tt>'NA'</tt> is always added automatically.</p>
 <p>For example two independent-variables and one (explicit) dependent-variable:</p>
 <pre class="codeinput">indIn = categorical({<span class="string">'On'</span>,<span class="string">'DC'</span>;<span class="string">'On'</span>,<span class="string">'On'</span>;<span class="string">'Off'</span>,<span class="string">'Off'</span>})
 depIn = categorical({<span class="string">'On'</span>;<span class="string">'On'</span>;<span class="string">'Off'</span>})
@@ -404,10 +409,10 @@ dbg.time
 <pre class="codeoutput">dbg = 
   struct with fields:
 
+        raw: [1&times;1 struct]
     options: [1&times;1 struct]
        time: [1&times;1 struct]
      system: [1&times;1 struct]
-        raw: [1&times;1 struct]
 ans =
     '.d 1
      .r 3
@@ -423,8 +428,8 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.053233
-    matEspresso: 0.055722
+       Espresso: 0.087056
+    matEspresso: 0.091632
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
@@ -500,7 +505,8 @@ ans =
 % where the dependent-variable is true (any missing rows are implicitly
 % false cases). Each column of |indIn| represents one independent-variable.
 %
-% The output values are |0|=false, |1|=true, |2|=don't-care (DC).
+% The output values are |0|=false, |1|=true, |2|=don't-care (DC), and
+% |5|=not applicable (NA).
 %
 % For example two independent-variables and one (implicit) dependent-variable:
 indIn = [true,false; true,true]
@@ -525,16 +531,16 @@ indOut = matEspresso(indIn,depIn)
 %
 % A numeric |indIn| matrix supports the following three values:
 %
-%    false: 0
-%     true: 1
-%       DC: 2
+%   false: 0
+%    true: 1
+%      DC: 2
 %
 % A numeric |depIn| matrix supports the following six values:
 %
-%    false: 0 == 3
-%     true: 1 == 4
-%       DC: 2
-%   ignore: 5
+%   false: 0 == 3
+%    true: 1 == 4
+%      DC: 2
+%      NA: 5
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = [1,2; 1,1; 0,0]
@@ -559,10 +565,10 @@ indOut = matEspresso(indIn,depIn)
 %
 % A character |depIn| matrix supports the following nine characters:
 %
-%    false: '0' == '3'
-%     true: '1' == '4'
-%       DC: '2' == '-' == '?'
-%   ignore: '5' == '~'
+%   false: '0' == '3'
+%    true: '1' == '4'
+%      DC: '2' == '-' == '?'
+%      NA: '5' == '~'
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = ['1-';'11';'00']
@@ -572,18 +578,20 @@ indOut = matEspresso(indIn,depIn)
 %
 % A categorical |indIn| matrix supports the following case-insensitive categories:
 %
-%    false: '0' == 'off' == 'no' == 'false'
-%     true: '1' == 'on' == 'yes' == 'true'
-%       DC: '2' == '-' == '?' == 'dc' == 'dontcare' == 'maybe'
+%   false: '0' == 'off' == 'no' == 'false'
+%    true: '1' == 'on' == 'yes' == 'true'
+%      DC: '2' == '-' == '?' == 'DC' == 'dontcare' == 'maybe'
 %
 % A categorical |depIn| matrix supports the following case-insensitive categories:
 %
-%    false: '0' == '3' == 'off' == 'no' == 'false'
-%     true: '1' == '4' == 'on' == 'yes' == 'true'
-%       DC: '2' == '-' == '?' == 'dc' == 'dontcare' == 'maybe'
-%   ignore: '5' == '~'
+%   false: '0' == '3' == 'off' == 'no' == 'false'
+%    true: '1' == '4' == 'on' == 'yes' == 'true'
+%      DC: '2' == '-' == '?' == 'DC' == 'dontcare' == 'maybe'
+%      NA: '5' == '~' == 'NA' == 'notapplicable'
 %
-% By default the output matrices use categories |off|, |on|, and |DC|.
+% By default the output matrices use categories |'off'|, |'on'|, and
+% |'DC'|, or alternative categories may be provided. Note: the category
+% |'NA'| is always added automatically.
 %
 % For example two independent-variables and one (explicit) dependent-variable:
 indIn = categorical({'On','DC';'On','On';'Off','Off'})

@@ -32,7 +32,7 @@
 %
 % For example, a 4-element truth-vector has 2-bits/independent-variables:
 %
-%   tt = '1010'                                  tt
+%   tt = '1010'                               tt ↓
 %                                                
 %   Position 0 -> binary 00 -> defined as true  '1'
 %   Position 1 -> binary 01 -> defined as false '0'

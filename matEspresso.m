@@ -49,7 +49,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 % ---------|-----------|--------------------------------------------------------
 % outCats  | See Note0 | Three category names corresponding to false, true, DC.
 %          |           | By default these are {'off','on','DC'}. A fourth
-%          |           | category 'ignored' is also appended to <depOut>.
+%          |           | category 'NA' is always appended to <depOut>.
 % ---------|-----------|--------------------------------------------------------
 % rmTemp   | false     | Leaves the temp .PLA file (faster, OS/user must delete).
 %          | true**    | Deletes the temp .PLA file (slower).
@@ -121,11 +121,11 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %
 %   indIn = Matrix (numeric/logical/categorical/char) or table (numeric
 %           columns/variables only) with independent-variable data.
-%           Values must be: 0/false/off/no, 1/true/on/yes, 2/DC/-/? (don't-care).
+%           Values must be: 0/false/off/no, 1/true/on/yes, 2/-/DC/? (don't-care).
 %   depIn = Matrix (numeric/logical/categorical/char) or table (numeric
 %           columns/variables only) with dependent-variable data.
-%           Values must be: 0/false/off/no, 1/true/on/yes, 2/DC/-/? (don't-care), 5/~.
-%           3 is an alias for 0, 4 is an alias for 1, 5/~ is ignored.
+%           Values must be: 0/false/off/no, 1/true/on/yes, 2/-/DC/? (don't-care),
+%           3 is an alias for 0, 4 is an alias for 1, 5/~/NA (not applicable).
 %           If omitted or [] then <depIn> implicitly consists of 1's only.
 %   options = ScalarStructure or name-value optional arguments as per the
 %           table shown in the Options section above.
@@ -134,11 +134,11 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %
 %   indOut = Matrix (int8/categorical/char) or table (int8 variables)
 %            of simplified patterns over the independent-variables.
-%            Each row is a covering pattern with values 0/false, 1/true, 2/DC/-.
+%            Each row is a covering pattern with values 0/false, 1/true, 2/-/DC.
 %   depOut = Matrix (int8/categorical/char) or table (int8 variables)
 %            showing which patterns cover which dependent-variables.
-%            Each row is a covering pattern with values 0/false, 1/true, 2/DC/-
-%            and (when option <Eout> combines 'f' with other sets) 5/~/ignored.
+%            Each row is a covering pattern with values 0/false, 1/true, 2/-/DC.
+%            and (when option <Eout> combines 'f' with other sets) 5/~/NA.
 %   expr   = CharacterVector containing minimal Boolean expressions, one
 %            per dependent-variable, separated by newlines. Uses MATLAB
 %            syntax (~, &, |) with parenthesized product terms.
@@ -243,6 +243,9 @@ depIn = meMatrix2int8('dep',depIn,5);
 depIn(depIn==3) = 0; % Espresso alias 3->0
 depIn(depIn==4) = 1; % Espresso alias 4->1
 %
+debug.raw.indIn = indIn;
+debug.raw.depIn = depIn;
+%
 indCnt = size(indIn,2);
 depCnt = size(depIn,2);
 %
@@ -259,6 +262,22 @@ oCmd = sprintf('-o %s',stpo.Eout);
 %
 debug.options.user = opts;
 debug.options.used = stpo;
+%
+%% Short-circuit: all outputs are NA, nothing for Espresso to minimize %%
+if all(depIn(:) == 5)
+    indOut = zeros(0,indCnt, 'int8');
+    depOut = zeros(0,depCnt, 'int8');
+    debug.raw.indOut = indOut;
+    debug.raw.depOut = depOut;
+    if nargout > 2
+        expr = meMakeExpr(indOut, depOut, stpo.indNames, stpo.depNames);
+        if stpo.simplify
+            expr = meSymSimpler(expr, stpo.indNames);
+        end
+    end
+    debug.time.(mfilename) = toc(ticH);
+    return
+end
 %
 %% PLA File %%
 %
@@ -290,7 +309,7 @@ fclose(fid);
 %% Espresso Execution %%
 %
 rawOpt = {oCmd,   '-Dcheck',  '-Dexact',  '-Dopo',  '-Dpair',  '-efast'};
-idxOpt = [true,stpo.Dcheck,stpo.Dexact,stpo.Dopo,stpo.Dpair,stpo.Efast];
+idxOpt = [true,stpo.Dcheck,stpo.Dexact,stpo.Dopo,stpo.Dpair,stpo.Efast ];
 useOpt = sprintf(' %s',rawOpt{idxOpt});
 exPath = meFindEspresso(stpo.exePath);
 espCmd = sprintf('"%s" %s < "%s"', exPath, useOpt, fnm);
@@ -357,16 +376,14 @@ else
 	booData = int8(booChar)-int8('0');
 	booData(booChar=='-') = 2; % don't care
 	booData(booChar=='~') = 5; % '~' appears in dependent-variable output
-	% columns when <Eout> combines 'f' with other sets (fd/fr/fdr).
-	% Espresso uses '~' to indicate that a covering pattern does not
-	% contribute to a particular dependent-variable, i.e. 'ignored'.
+	% columns when <Eout> combines 'f' with other sets (fd/fr/fdr). Note
+	% that Espresso uses '~' to indicate that a covering pattern does not
+	% contribute to a particular dependent-variable, i.e. not applicable (NA).
 	%
 	indOut = booData(:,1:indCnt);
 	depOut = booData(:,end-depCnt+1:end);
 end
 %
-debug.raw.indIn = indIn;
-debug.raw.depIn = depIn;
 debug.raw.indOut = indOut;
 debug.raw.depOut = depOut;
 %
@@ -380,7 +397,7 @@ end
 switch otyp
 	case 'cat'
 		indOut = categorical(indOut, 0:2   ,stpo.outCats, 'Protected',true);
-		stpo.outCats{4} = 'ignored';
+		stpo.outCats{4} = 'NA';
 		depOut = categorical(depOut,[0:2,5],stpo.outCats, 'Protected',true);
 	case 'tbl'
 		indOut = array2table(indOut, 'VariableNames',stpo.indNames);
@@ -415,8 +432,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meNs2c
 function mePrintf(fid,fmt,one,indC,depC)
 idx = any(depC==one,2);
+fprintf(fid,fmt,nnz(idx));
 if any(idx)
-	fprintf(fid,fmt,nnz(idx));
 	for k = reshape(find(idx),1,[])
 		fprintf(fid,'%s %s\n',indC(k,:),depC(k,:));
 	end
@@ -425,8 +442,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%mePrintf
 function out = meCategorical2Matrix(pfx,inp,isx)
 two = {'2','-','?','dc','dontcare','maybe'};
-c01 = {'0','off','no','false','1','on','yes','true','3','4','5','~','ignore','ignored'};
-v01 = [  0,    0,   0,      0,  1,   1,    1,     1,  3,  4,  5,  5,        5,       5];
+c01 = {'0','off','no','false','1','on','yes','true','3','4','5','~','na','notapplicable'};
+v01 = [  0,    0,   0,      0,  1,   1,    1,     1,  3,  4,  5,  5,   5,              5];
 idx = v01<=(1+9*isx);
 cci = categories(inp);
 txt = sprintf(', %s',c01{idx},two{:});
