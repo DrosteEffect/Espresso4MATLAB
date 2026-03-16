@@ -202,7 +202,6 @@ depIn = [1,0; 0,1; 0,2]
 % syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
-% Product terms are parenthesized when they contain multiple literals.
 %
 [~,~,expr] = matEspresso(indIn,depIn)
 %% Output 4: |debug|

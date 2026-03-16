@@ -114,9 +114,9 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %   >> [~,~,expr] = matEspresso(indIn)
 %   expr =
 %        'Z = (A & B & ~C) | (A & ~B & C) | (~A & B & C)'
-%   >> [~,~,expr] = matEspresso(indIn, 'simplify',true)
+%   >> [~,~,expr] = matEspresso(indIn,[], 'simplify',true)
 %   expr =
-%        'Z = A & (~B | ~C) & (B | C) | ~A & B & C'
+%        'Z = A & (B & ~C | ~B & C) | ~A & B & C'
 %
 %% Input Arguments %%
 %
@@ -280,7 +280,7 @@ if all(depIn(:)==5)
 	if nargout>2
 		expr = meMakeExpr(indOut, depOut, stpo.indNames, stpo.depNames);
 		if stpo.simplify
-			expr = meSymSimpler(expr, stpo.indNames);
+			expr = meSymSimpler(expr, indCnt, stpo.indNames);
 		end
 	end
 	[indOut,depOut] = meOutType(otyp, indOut,depOut, stpo.indNames,stpo.depNames, stpo.outCats);
@@ -292,7 +292,7 @@ end
 %
 fnm = [tempname(),'.pla'];
 [fid,msg] = fopen(fnm,'wt');
-assert(fid>2,'SC:matEspresso:fopen:message','%s',msg)
+assert(fid>2,'SC:matEspresso:fopen:message','%s\n',msg)
 %
 if stpo.rmTemp
 	obj = TempFileCleanup(fid,fnm,recycle()); %#ok<NASGU>
@@ -383,11 +383,11 @@ if all(idyRows)
 else
 	booChar = vertcat(booRows{~idyRows});
 	booData = int8(booChar)-int8('0');
-	booData(booChar=='-') = 2; % don't care
-	booData(booChar=='~') = 5; % '~' appears in dependent-variable output
-	% columns when <Eout> combines 'f' with other sets (fd/fr/fdr). Note
-	% that Espresso uses '~' to indicate that a covering pattern does not
-	% contribute to a particular dependent-variable, i.e. not applicable (NA).
+	booData(booChar=='-') = 2; % don't care (DC).
+	booData(booChar=='~') = 5; % not applicable (NA). Tilde '~' appears in
+	% dependent-variable output columns when <Eout> combines 'f' with other
+	% sets (fd/fr/fdr). Espresso uses '~' to indicate that a covering
+	% pattern does not contribute to a particular dependent-variable.
 	%
 	indOut = booData(:,1:indCnt);
 	depOut = booData(:,end-depCnt+1:end);
@@ -399,7 +399,7 @@ debug.raw.depOut = depOut;
 if nargout>2
 	expr = meMakeExpr(indOut,depOut, stpo.indNames,stpo.depNames);
 	if stpo.simplify
-		expr = meSymSimpler(expr, stpo.indNames);
+		expr = meSymSimpler(expr, indCnt, stpo.indNames);
 	end
 end
 %
@@ -695,16 +695,16 @@ expr = sprintf('\n%s',allExp{:});
 expr = expr(2:end);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meMakeExpr
-function expr = meSymSimpler(expr,indNames)
+function expr = meSymSimpler(expr, indCnt, indNames)
 % Attempt simplification of the expression. Requires the Symbolic Toolbox.
 spl = regexp(expr, '[\r\n]+', 'split');
 spl = spl(~cellfun('isempty', spl));
 out = cell(size(spl));
-syms(indNames{:}, 'logical'); %#ok<NASGU>
+syms(indNames{:});
 for k = 1:numel(spl)
 	tkn = regexp(spl{k}, '^\s*(\w+)\s*=\s*(.+)$', 'tokens', 'once');
 	if numel(tkn)==2
-		tmp = simplify(eval(tkn{2}), 'Steps',1234);
+		tmp = simplify(str2sym(tkn{2}), 'Steps',max(123,indCnt));
 		out{k} = sprintf('%s = %s', tkn{1}, char(tmp));
 	else
 		out{k} = spl{k};

@@ -82,7 +82,7 @@ Minimize two dependent-variables (`hello`, `world`) with two independent-variabl
          'hello = A
           world = B'
     
-Simplify/factorize one dependent-variable (`Z`) with three independent-variables (`A`, `B`,`C`):
+Simplify/factorize one dependent-variable (`Z`) with three independent-variables (`A`, `B`, `C`):
 
     >> indIn = [1 1 0; 1 0 1; 0 1 1];
     >> [~,~,expr] = matEspresso(indIn)
