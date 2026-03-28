@@ -27,7 +27,7 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 % * matEspresso.m from <https://www.mathworks.com/matlabcentral/fileexchange/183127>
 %
 % See also MATESPRESSO VECESPRESSO UIFIGURE UITABLE WAITFOR
-persistent uif uit uis uot uoe fgc ddm fgp
+persistent fgh fnhSetVals fnhGetVals
 % Release | Feature
 % --------|--------
 % R2014b  | gobjects (pre-allocate graphics object arrays)
@@ -43,39 +43,233 @@ persistent uif uit uis uot uoe fgc ddm fgp
 %
 %% Input Wrangling %%
 %
-switch nargin
-	case 0
-		args = {[0,0,0;0,0,1;0,1,0;0,1,1;1,0,0;1,0,1;1,1,0;1,1,1],[0,0;0,1;0,1;1,0;0,1;1,0;1,0;1,1]};
-		%args = {[0,0;0,1;1,0;1,1],[0;0;0;1]};
-	case 1
-		args = {indIn,ones(size(indIn,1),1)};
-	otherwise
-		args = {indIn,depIn};
+args = {[0,0,0;0,0,1;0,1,0;0,1,1;1,0,0;1,0,1;1,1,0;1,1,1],[]};
+%
+if nargin<1 || isnumeric(indIn)&&isequal(indIn,[])
+	tmp = [0,0;0,1;0,1;1,0;0,1;1,0;1,0;1,1];
+else
+	tmp = ones(size(indIn,1),1);
+	args{1} = indIn;
+end
+%
+if nargin<2 || isnumeric(depIn)&&isequal(depIn,[])
+	args{2} = tmp;
+else
+	args{2} = depIn;
 end
 %
 args{1} = megArr2int8('ind',args{1});
 args{2} = megArr2int8('dep',args{2});
 %
-% This does input checking, we get the normalized options structure:
-[indOut,depOut,expr,debug] = matEspresso(nan(1,0),[],varargin{:});
+% This does input checking, we get the normalized options structures:
+out = cell(1,4);
+[out{:}] = matEspresso(nan(1,0),[],varargin{:});
 %
-opts = debug.options.user;
-stpo = debug.options.used;
+opts = out{4}.options.user;
+stpo = out{4}.options.used;
 fnop = fieldnames(opts);
-opts = rmfield(opts,fnop(strcmpi(fnop,'Eout')));
+opts = rmfield(opts,fnop(strcmpi(fnop,'Eout'))); % case insensitive!
 opts.Eout = stpo.Eout;
 %
-if isempty(uif) || ~ishghandle(uif)
-	[uif,uit,uis,uot,uoe,ddm] = megNewFig(opts,@megTableClBk,@megSpinClBk,@megUpDate);
-	fgc = uoe.FontColor;
-	fgp = get(uif, 'Pointer');
+%% Ensure Figure %%
+%
+if isempty(fgh) || ~ishghandle(fgh)
+	[fgh,fnhSetVals,fnhGetVals] = megNewFig(out,args,opts);
 else
-	figure(uif)
+	figure(fgh)
 end
 %
-set(uis,{'Value'},{size(args{1},1);size(args{1},2);size(args{2},2)})
+fnhSetVals(args,opts)
 %
-megUpDate()
+if nargout
+	waitfor(fgh)
+	[indOut,depOut,expr,debug] = fnhGetVals();
+end
+%
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspressoGUI
+function [uif,svh,gvh] = megNewFig(out,args,opts)
+%
+% Create the GUI figure and all components
+%
+uif = uifigure();
+uif.Name = 'Interactive Truth-Table Minimization Demo';
+uif.Tag = mfilename;
+uif.HandleVisibility = 'off';
+uif.IntegerHandle = 'off';
+%
+uig = uigridlayout(uif, [6,6]);
+uig.RowHeight = {'fit','1x','fit','fit','fit','fit'};
+uig.ColumnWidth = {'3x','3x','3x','2x','2x','2x'};
+%
+uit = gobjects(1,2);
+uis = gobjects(1,3);
+uot = gobjects(1,2);
+%
+%%% Input Tables
+%
+ui0 = uilabel(uig);
+ui0.Text = 'indIn';
+ui0.HorizontalAlignment = 'center';
+ui0.Layout.Row = 1;
+ui0.Layout.Column = [1,2];
+%
+uit(1) = uitable(uig);
+uit(1).Tag = 'indIn';
+uit(1).ColumnWidth = 'fit';
+uit(1).ColumnEditable = true;
+uit(1).CellEditCallback = {@megTableClBk,1};
+uit(1).Layout.Row = [2,4];
+uit(1).Layout.Column = [1,2];
+uit(1).Tooltip = 'Independent variables';
+%
+ui1 = uilabel(uig);
+ui1.Text = 'depIn';
+ui1.HorizontalAlignment = 'center';
+ui1.Layout.Row = 1;
+ui1.Layout.Column = 3;
+%
+uit(2) = uitable(uig);
+uit(2).Tag = 'depIn';
+uit(2).ColumnWidth = 'fit';
+uit(2).ColumnEditable = true;
+uit(2).CellEditCallback = {@megTableClBk,2};
+uit(2).Layout.Row = [2,4];
+uit(2).Layout.Column = 3;
+uit(2).Tooltip = 'Dependent variables';
+%
+%%% Input Spinners
+%
+ui2 = uilabel(uig);
+ui2.Text = 'Rows';
+ui2.HorizontalAlignment = 'center';
+ui2.Layout.Row = 5;
+ui2.Layout.Column = 2;
+%
+ui3 = uilabel(uig);
+ui3.Text = 'Columns (indIn)';
+ui3.HorizontalAlignment = 'center';
+ui3.Layout.Row = 5;
+ui3.Layout.Column = 1;
+%
+ui4 = uilabel(uig);
+ui4.Text = 'Columns (depIn)';
+ui4.HorizontalAlignment = 'center';
+ui4.Layout.Row = 5;
+ui4.Layout.Column = 3;
+%
+uis(1) = uispinner(uig);
+uis(1).Tag = 'rows';
+uis(1).Value = 1;
+uis(1).Limits = [1,Inf];
+uis(1).Step = 1;
+uis(1).RoundFractionalValues = 'on';
+uis(1).ValueChangedFcn = @megSpinClBk;
+uis(1).Layout.Row = 6;
+uis(1).Layout.Column = 2;
+uis(1).Tooltip = 'Number of rows for indIn & depIn';
+%
+uis(2) = uispinner(uig);
+uis(2).Tag = 'indC';
+uis(2).Value = 1;
+uis(2).Limits = [1,Inf];
+uis(2).Step = 1;
+uis(2).RoundFractionalValues = 'on';
+uis(2).ValueChangedFcn = @megSpinClBk;
+uis(2).Layout.Row = 6;
+uis(2).Layout.Column = 1;
+uis(2).Tooltip = 'Number of columns for indIn';
+%
+uis(3) = uispinner(uig);
+uis(3).Tag = 'depC';
+uis(3).Value = 1;
+uis(3).Limits = [1,Inf];
+uis(3).Step = 1;
+uis(3).RoundFractionalValues = 'on';
+uis(3).ValueChangedFcn = @megSpinClBk;
+uis(3).Layout.Row = 6;
+uis(3).Layout.Column = 3;
+uis(3).Tooltip = 'Number of columns for depIn';
+%
+%%% Output Tables
+%
+ui5 = uilabel(uig);
+ui5.Text = 'indOut';
+ui5.HorizontalAlignment = 'center';
+ui5.Layout.Row = 1;
+ui5.Layout.Column = [4,5];
+%
+uot(1) = uitable(uig);
+uot(1).Tag = 'indOut';
+uot(1).ColumnWidth = 'fit';
+uot(1).ColumnEditable = false;
+uot(1).Layout.Row = 2;
+uot(1).Layout.Column = [4,5];
+uot(1).Tooltip = 'Minimized independent variables';
+%
+ui6 = uilabel(uig);
+ui6.Text = 'depOut';
+ui6.HorizontalAlignment = 'center';
+ui6.Layout.Row = 1;
+ui6.Layout.Column = 6;
+%
+uot(2) = uitable(uig);
+uot(2).Tag = 'depOut';
+uot(2).ColumnWidth = 'fit';
+uot(2).ColumnEditable = false;
+uot(2).Layout.Row = 2;
+uot(2).Layout.Column = 6;
+uot(2).Tooltip = 'Minimized dependent variables';
+%
+%%% Expression text area
+%
+ui7 = uilabel(uig);
+ui7.Text = 'Expression';
+ui7.HorizontalAlignment = 'center';
+ui7.Layout.Row = 3;
+ui7.Layout.Column = [4,6];
+%
+uoe = uitextarea(uig);
+uoe.Layout.Row = 4;
+uoe.Layout.Column = [4,6];
+uoe.Editable = false;
+uoe.WordWrap = 'on';
+uoe.Tooltip = 'Minimized boolean expressions in MATLAB syntax';
+fgc = uoe.FontColor;
+%
+%%% Output Sets
+%
+ui8 = uilabel(uig);
+ui8.Text = 'Output Set (depOut)';
+ui8.HorizontalAlignment = 'center';
+ui8.Layout.Row = 5;
+ui8.Layout.Column = [4,6];
+%
+fdr = {'f', 'd', 'r', 'fd', 'fr', 'dr', 'fdr'};
+ddm = uidropdown(uig);
+ddm.Items = megItemsData(fdr);
+ddm.ItemsData = fdr;
+ddm.Layout.Row = 6;
+ddm.Layout.Column = [4,6];
+ddm.Tooltip = 'Select which cases to return from Espresso';
+ddm.ValueChangedFcn = @megUpDate;
+%
+%% Set & Get Functions %%
+%
+gvh = @megGetVals;
+svh = @megSetVals;
+%
+	function varargout = megGetVals()
+		varargout = out;
+	end
+%
+	function megSetVals(varargin)
+		args = varargin{1};
+		opts = varargin{2};
+		ddm.Value = opts.Eout;
+		set(uis,{'Value'},{size(args{1},1);size(args{1},2);size(args{2},2)})
+		megUpDate()
+	end
 %
 %% Callback Functions %%
 %
@@ -121,11 +315,12 @@ megUpDate()
 %
 	function megUpDate(~,~)
 		msg = '';
+		fgp = uif.Pointer;
 		uif.Pointer = 'watch';
 		opts.Eout = ddm.Value;
 		drawnow()
 		try
-			[indOut,depOut,expr,debug] = matEspresso(args{1},args{2},opts);
+			[out{:}] = matEspresso(args{1},args{2},opts);
 		catch ME
 			if startsWith(ME.identifier,'SC:matEspresso:')
 				msg = ME.message;
@@ -141,17 +336,18 @@ megUpDate()
 		end
 		%
 		uoe.FontColor = fgc;
-		uoe.Value = expr;
+		uoe.Value = out{3};
 		%
-		iOM = debug.raw.indOut;
-		dOM = debug.raw.depOut;
-		iIM = debug.raw.indIn;
-		dIM = debug.raw.depIn;
+		dbg = out{4};
+		iOM = dbg.raw.indOut;
+		dOM = dbg.raw.depOut;
+		iIM = dbg.raw.indIn;
+		dIM = dbg.raw.depIn;
 		%
-		iOut = megMat2Table(2, debug.options.used.indNames, iOM);
-		dOut = megMat2Table(5, debug.options.used.depNames, dOM);
-		iInp = megMat2Table(2, debug.options.used.indNames, iIM);
-		dInp = megMat2Table(5, debug.options.used.depNames, dIM);
+		iOut = megMat2Table(2, dbg.options.used.indNames, iOM);
+		dOut = megMat2Table(5, dbg.options.used.depNames, dOM);
+		iInp = megMat2Table(2, dbg.options.used.indNames, iIM);
+		dInp = megMat2Table(5, dbg.options.used.depNames, dIM);
 		%
 		set([uit,uot],{'Data'},{iInp;dInp;iOut;dOut})
 		%
@@ -179,14 +375,8 @@ megUpDate()
 		drawnow()
 	end
 %
-if nargout
-	waitfor(uif)
-else
-	clear indOut
 end
-%
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspressoGUI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%megNewFig
 function out = megArr2int8(pfx,arr)
 % Convert from numeric/logical to INT8. Applies to array or table columns.
 if isnumeric(arr)||islogical(arr)
@@ -215,173 +405,6 @@ tmp = categorical(mat, 0:mxi, scs(1:1+mxi), 'Protected',true);
 tbl = array2table(tmp,'VariableNames',vnm);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%megMat2Table
-function [uif,uit,uis,uot,uoe,ddm] = megNewFig(stpo,tblClBk,spnClBk,ddmClBk)
-% Create the GUI figure and all components
-%
-uif = uifigure();
-uif.Name = 'Interactive Truth-Table Minimization Demo';
-uif.Tag = mfilename;
-uif.HandleVisibility = 'off';
-uif.IntegerHandle = 'off';
-%
-uig = uigridlayout(uif, [6,6]);
-uig.RowHeight = {'fit','1x','fit','fit','fit','fit'};
-uig.ColumnWidth = {'3x','3x','3x','2x','2x','2x'};
-%
-uit = gobjects(1,2);
-uis = gobjects(1,3);
-uot = gobjects(1,2);
-%
-%%% Input Tables
-%
-tmp = uilabel(uig);
-tmp.Text = 'indIn';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 1;
-tmp.Layout.Column = [1,2];
-%
-uit(1) = uitable(uig);
-uit(1).Tag = 'indIn';
-uit(1).ColumnWidth = 'fit';
-uit(1).ColumnEditable = true;
-uit(1).CellEditCallback = {tblClBk,1};
-uit(1).Layout.Row = [2,4];
-uit(1).Layout.Column = [1,2];
-uit(1).Tooltip = 'Independent variables';
-%
-tmp = uilabel(uig);
-tmp.Text = 'depIn';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 1;
-tmp.Layout.Column = 3;
-%
-uit(2) = uitable(uig);
-uit(2).Tag = 'depIn';
-uit(2).ColumnWidth = 'fit';
-uit(2).ColumnEditable = true;
-uit(2).CellEditCallback = {tblClBk,2};
-uit(2).Layout.Row = [2,4];
-uit(2).Layout.Column = 3;
-uit(2).Tooltip = 'Dependent variables';
-%
-%%% Input Spinners
-%
-tmp = uilabel(uig);
-tmp.Text = 'Rows';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 5;
-tmp.Layout.Column = 2;
-%
-tmp = uilabel(uig);
-tmp.Text = 'Columns (indIn)';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 5;
-tmp.Layout.Column = 1;
-%
-tmp = uilabel(uig);
-tmp.Text = 'Columns (depIn)';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 5;
-tmp.Layout.Column = 3;
-%
-uis(1) = uispinner(uig);
-uis(1).Tag = 'rows';
-uis(1).Value = 1;
-uis(1).Limits = [1,Inf];
-uis(1).Step = 1;
-uis(1).RoundFractionalValues = 'on';
-uis(1).ValueChangedFcn = spnClBk;
-uis(1).Layout.Row = 6;
-uis(1).Layout.Column = 2;
-uis(1).Tooltip = 'Number of rows for indIn & depIn';
-%
-uis(2) = uispinner(uig);
-uis(2).Tag = 'indC';
-uis(2).Value = 1;
-uis(2).Limits = [1,Inf];
-uis(2).Step = 1;
-uis(2).RoundFractionalValues = 'on';
-uis(2).ValueChangedFcn = spnClBk;
-uis(2).Layout.Row = 6;
-uis(2).Layout.Column = 1;
-uis(2).Tooltip = 'Number of columns for indIn';
-%
-uis(3) = uispinner(uig);
-uis(3).Tag = 'depC';
-uis(3).Value = 1;
-uis(3).Limits = [1,Inf];
-uis(3).Step = 1;
-uis(3).RoundFractionalValues = 'on';
-uis(3).ValueChangedFcn = spnClBk;
-uis(3).Layout.Row = 6;
-uis(3).Layout.Column = 3;
-uis(3).Tooltip = 'Number of columns for depIn';
-%
-%%% Output Tables
-%
-tmp = uilabel(uig);
-tmp.Text = 'indOut';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 1;
-tmp.Layout.Column = [4,5];
-%
-uot(1) = uitable(uig);
-uot(1).Tag = 'indOut';
-uot(1).ColumnWidth = 'fit';
-uot(1).ColumnEditable = false;
-uot(1).Layout.Row = 2;
-uot(1).Layout.Column = [4,5];
-uot(1).Tooltip = 'Minimized independent variables';
-%
-tmp = uilabel(uig);
-tmp.Text = 'depOut';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 1;
-tmp.Layout.Column = 6;
-%
-uot(2) = uitable(uig);
-uot(2).Tag = 'depOut';
-uot(2).ColumnWidth = 'fit';
-uot(2).ColumnEditable = false;
-uot(2).Layout.Row = 2;
-uot(2).Layout.Column = 6;
-uot(2).Tooltip = 'Minimized dependent variables';
-%
-%%% Expression text area
-%
-tmp = uilabel(uig);
-tmp.Text = 'Expression';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 3;
-tmp.Layout.Column = [4,6];
-%
-uoe = uitextarea(uig);
-uoe.Layout.Row = 4;
-uoe.Layout.Column = [4,6];
-uoe.Editable = false;
-uoe.WordWrap = 'on';
-uoe.Tooltip = 'Minimized boolean expressions in MATLAB syntax';
-%
-%%% Output Sets
-%
-tmp = uilabel(uig);
-tmp.Text = 'Output Set (depOut)';
-tmp.HorizontalAlignment = 'center';
-tmp.Layout.Row = 5;
-tmp.Layout.Column = [4,6];
-%
-fdr = {'f', 'd', 'r', 'fd', 'fr', 'dr', 'fdr'};
-ddm = uidropdown(uig);
-ddm.Items = megItemsData(fdr);
-ddm.ItemsData = fdr;
-ddm.Value = stpo.Eout;
-ddm.Layout.Row = 6;
-ddm.Layout.Column = [4,6];
-ddm.Tooltip = 'Select which cases to return from Espresso';
-ddm.ValueChangedFcn = ddmClBk;
-%
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%megNewFig
 function out = megItemsData(fdr)
 rpl = {'TRUE(1)','DC(-)','FALSE(0)'};
 fnh = @(v)join(rpl(interp1(+'fdr',1:3,+v)),' + ');
