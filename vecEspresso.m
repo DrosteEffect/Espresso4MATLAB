@@ -131,10 +131,10 @@ ticH = tic();
 fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));
 % Release | Feature
 % --------|--------
-% R2008a  | assert(cond, msgID, msg, printf format string)
-% R2008b  | id=tic(); ... toc(id);
-% R2009b  | tilde argument placeholder
 % R2016b  | string class, string curly-brace indexing    [only if supplied]
+% R2009b  | tilde argument placeholder
+% R2008b  | id=tic(); ... toc(id);
+% R2008a  | assert(cond, msgID, msg, printf format string)
 %
 %% Input Wrangling %%
 %

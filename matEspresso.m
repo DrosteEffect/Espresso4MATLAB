@@ -161,13 +161,13 @@ fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));
 otyp = 'int8';
 % Release | Feature
 % --------|--------
-% R2007b  | regexp: cell-array-of-char, split option, tokens & ones outputs
-% R2008a  | assert(cond, msgID, msg, printf format string)
-% R2008b  | id=tic(); ... toc(id);
-% R2010b  | iscolumn                               [only if table supplied]
-% R2013b  | categorical class                            [only if supplied]
-% R2013b  | table class, array2table varfun table2array  [only if supplied]
 % R2016b  | string class, string curly-brace indexing    [only if supplied]
+% R2013b  | table class, array2table varfun table2array  [only if supplied]
+% R2013b  | categorical class                            [only if supplied]
+% R2010b  | iscolumn                               [only if table supplied]
+% R2008b  | id=tic(); ... toc(id);
+% R2008a  | assert(cond, msgID, msg, printf format string)
+% R2007b  | regexp: cell-array-of-char, split option, tokens & ones outputs
 %
 %% Input Wrangling %%
 %

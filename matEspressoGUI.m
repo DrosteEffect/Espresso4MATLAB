@@ -30,16 +30,16 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 persistent fgh fnhSetVals fnhGetVals
 % Release | Feature
 % --------|--------
-% R2014b  | gobjects (pre-allocate graphics object arrays)
-% R2016a  | uifigure
-% R2016b  | startsWith
-% R2016b  | string class: join (string-array join)
-% R2016b  | string class: strcat/cellfun interoperability
-% R2018b  | uitextarea, uilabel
-% R2019a  | uidropdown
 % R2019b  | uigridlayout (including 'fit' row/column size specifier)
 % R2019b  | uispinner (including RoundFractionalValues property)
 % R2019b  | uistyle, addStyle, removeStyle for uitable in uifigure
+% R2019a  | uidropdown
+% R2018b  | uitextarea, uilabel
+% R2016b  | startsWith
+% R2016b  | string class: join (string-array join)
+% R2016b  | string class: strcat/cellfun interoperability
+% R2016a  | uifigure
+% R2014b  | gobjects (pre-allocate graphics object arrays)
 %
 %% Input Wrangling %%
 %
@@ -89,12 +89,11 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspressoGUI
 function [uif,svh,gvh] = megNewFig(out,args,opts)
-%
-% Create the GUI figure and all components
+% Create the graphics objects. Define all callback functions in one workspace.
 %
 uif = uifigure();
 uif.Name = 'Interactive Truth-Table Minimization Demo';
-uif.Tag = mfilename;
+uif.Tag = mfilename();
 uif.HandleVisibility = 'off';
 uif.IntegerHandle = 'off';
 %
@@ -320,7 +319,7 @@ svh = @megSetVals;
 		opts.Eout = ddm.Value;
 		drawnow()
 		try
-			[out{:}] = matEspresso(args{1},args{2},opts);
+			[out{:}] = matEspresso(args{1:2},opts);
 		catch ME
 			if startsWith(ME.identifier,'SC:matEspresso:')
 				msg = ME.message;
