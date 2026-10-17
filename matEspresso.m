@@ -205,9 +205,10 @@ elseif isa(indIn,'table')
 	[indIn,stpo.indNames] = meTable2Matrix('ind',indIn,stpo.indNames);
 elseif ischar(indIn)
 	otyp = 'char';
-	assert(all(ismember(indIn(:),'012-?')),...
+	ercv = '012-?';
+	assert(all(ismember(indIn(:),ercv)),...
 		'SC:matEspresso:indIn:InvalidCharacters',...
-		'Input <indIn> must only contain %s characters.',fErr('012-?'))
+		'Input <indIn> must only contain %s characters.',fErr(ercv))
 	indIn = int8(indIn)-int8('0');
 	indIn(~ismember(indIn,0:2)) = 2;
 end
@@ -220,9 +221,10 @@ elseif isa(depIn,'table')
 	[depIn,stpo.depNames] = meTable2Matrix('dep',depIn,stpo.depNames);
 elseif ischar(depIn)
 	otyp = 'char';
-	assert(all(ismember(depIn(:),'012345-?~')),...
+	ercv = '012345-?~';
+	assert(all(ismember(depIn(:),ercv)),...
 		'SC:matEspresso:depIn:InvalidCharacters',...
-		'Input <depIn> must only contain %s characters.',fErr('012345-?~'))
+		'Input <depIn> must only contain %s characters.',fErr(ercv))
 	depIn(depIn=='~') = '5';
 	depIn = int8(depIn)-int8('0');
 	depIn(~ismember(depIn,0:5)) = 2;
@@ -240,8 +242,8 @@ assert(size(indIn,1)==size(depIn,1),...
 indIn = meMatrix2int8('ind',indIn,2);
 depIn = meMatrix2int8('dep',depIn,5);
 %
-depIn(depIn==3) = 0; % Espresso alias 3->0
-depIn(depIn==4) = 1; % Espresso alias 4->1
+depIn(depIn==3) = 0; % Espresso alias 3 -> 0.
+depIn(depIn==4) = 1; % Espresso alias 4 -> 1.
 %
 debug.raw.indIn = indIn;
 debug.raw.depIn = depIn;
@@ -293,9 +295,7 @@ fnm = [tempname(),'.pla'];
 [fid,msg] = fopen(fnm,'wt');
 assert(fid>2,'SC:matEspresso:fopen:message','%s\n',msg)
 %
-if stpo.rmTemp
-	obj = onCleanup(@()meCleanup(fid,fnm));
-end
+obj = onCleanup(@()meCleanup(fid,fnm,stpo.rmTemp));
 %
 % Generate input PLA format string:
 indChars = char(indIn+'0');
@@ -375,22 +375,30 @@ end
 %% Parse Results %%
 %
 allRows = regexp(result,'[\n\r]+','split');
-booRows = regexp(allRows,'^[-012?]+\s+[-~012345]+$','match','once');
+booRows = regexp(allRows,'^([-012?]+)\s+([-~012345]+)$','tokens','once');
 idyRows = cellfun('isempty',booRows);
 if all(idyRows)
 	indOut = zeros(0,indCnt,'int8');
 	depOut = zeros(0,depCnt,'int8');
 else
-	booChar = vertcat(booRows{~idyRows});
-	booData = int8(booChar)-int8('0');
-	booData(booChar=='-') = 2; % don't care (DC).
-	booData(booChar=='~') = 5; % not applicable (NA). Tilde '~' appears in
-	% dependent-variable output columns when <Eout> combines 'f' with other
-	% sets (fd/fr/fdr). Espresso uses tilde to indicate that a covering
-	% pattern does not contribute to a particular dependent-variable.
-	%
-	indOut = booData(:,1:indCnt);
-	depOut = booData(:,end-depCnt+1:end);
+	booRows = vertcat(booRows{~idyRows});
+	indChar = vertcat(booRows{:,1});
+	depChar = vertcat(booRows{:,2});
+	assert(size(indChar,2)==indCnt,...
+		'SC:matEspresso:Espresso:indOutWidth',...
+		'Espresso returned an unexpected number of independent variable columns.')
+	assert(size(depChar,2)==depCnt,...
+		'SC:matEspresso:Espresso:depOutWidth',...
+		'Espresso returned an unexpected number of dependent variable columns.')
+	indOut = int8(indChar)-int8('0');
+	depOut = int8(depChar)-int8('0');
+	indOut(indChar=='?') = 2; % don't care (DC).
+	indOut(indChar=='-') = 2; % don't care (DC).
+	depOut(depChar=='-') = 2; % don't care (DC).
+	depOut(depChar=='~') = 5; % not applicable (NA). Tilde '~' appears in
+ 	% dependent-variable output columns when <Eout> combines 'f' with other
+ 	% sets (fd/fr/fdr). Espresso uses tilde to indicate that a covering
+ 	% pattern does not contribute to a particular dependent-variable.
 end
 %
 debug.raw.indOut = indOut;
@@ -414,15 +422,17 @@ debug.time.(mfilename) = toc(ticH);
 %
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspresso
-function meCleanup(fid,fnm)
+function meCleanup(fid,fnm,rmt)
 try %#ok<TRYNC>
 	fclose(fid);
 end
-try %#ok<TRYNC>
+if rmt
 	old = recycle();
 	obj = onCleanup(@()recycle(old));
 	recycle off
-	delete(fnm);
+	try %#ok<TRYNC>
+		delete(fnm);
+	end
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meCleanup

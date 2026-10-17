@@ -241,7 +241,6 @@ end
 cnts = sum(indOut~=2,2);
 inps = sum(cnts(cnts>1)) + (numel(cnts)>1)*numel(cnts);
 %
-% Build Nums: Find covered indices for each pattern
 % Build Nums: expand each covering pattern into its covered indices.
 Nums = cell(nTerms,1);
 if ttPwr>0 && nTerms>0

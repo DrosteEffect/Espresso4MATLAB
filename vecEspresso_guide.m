@@ -10,6 +10,10 @@
 % possible combinations of Boolean variables) and returns minimized
 % covering patterns. This interface matches |minTruthtable|'s core
 % functionality while using a more efficient minimization algorithm.
+% However, |vecEspresso| does construct the entire binary truth table
+% and thus is intended for dense vectors. For sparse problems, where only
+% selected minterms or cubes need to be specified, call |matEspresso|
+% directly instead: this avoids creating the entire truth table.
 %
 % Refer to the |matEspresso| documentation for details on obtaining,
 % installing, and configuring the |Espresso| executable.
@@ -254,6 +258,10 @@ tt = '011-01-0';
 %
 % * Working with >10 independent-variables,
 % * Truth tables larger than 2^15 elements,
+%
+% *When to use |matEspresso|:*
+%
+% * Working with truth tables in matrix/table form.
 % * Working with very sparse truth tables (few true positions).
 %
 % *When to use |minTruthtable|:*
@@ -300,8 +308,8 @@ tt = '011-01-0';
 [BinsE,inpsE,NumsE,ottE] = vecEspresso(tt)
 %% Example: Large Truth-Table Performance
 %
-% |vecEspresso| excels with larger problems. This would be impractical for
-% |minTruthtable| but |vecEspresso| handles it efficiently using
+% |vecEspresso| can process larger problems that would be impractical
+% |minTruthtable|, but |vecEspresso| handles them efficiently using
 % |Espresso|'s heuristic algorithms.
 %
 % For example, a 17-independent-variable truth-table (131072 elements):
