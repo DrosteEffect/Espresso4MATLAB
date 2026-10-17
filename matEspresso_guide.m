@@ -220,12 +220,11 @@ dbg.time
 %% Temporary File
 %
 % |matEspresso| passes the input data to |Espresso| via a temporary |.PLA|
-% file stored in |tempdir|. By default these are deleted after use (and
-% might end up in the desktop's recycling bin). Note that you can:
+% file stored in |tempdir|. By default these are permanently deleted after
+% the processing is completed. Note that you can:
 %
 % * Use option |rmTemp| to control if this file is automatically deleted or not.
 % * Get the filepath from the 4th output |debug.system.tempPLA|.
-% * Set MATLAB's recycle state: <https://www.mathworks.com/help/matlab/ref/recycle.html>
 %
 %% |matEspressoGUI| Interactive Demo
 %

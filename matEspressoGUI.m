@@ -103,44 +103,28 @@ uig.ColumnWidth = {'3x','3x','3x','2x','2x','2x'};
 %
 uit = gobjects(1,2);
 uis = gobjects(1,3);
-uot = gobjects(1,2);
 %
 %%% Input Tables
 %
 ui0 = uilabel(uig);
-ui0.Text = 'indIn';
+ui0.Text = 'In';
 ui0.HorizontalAlignment = 'center';
 ui0.Layout.Row = 1;
-ui0.Layout.Column = [1,2];
+ui0.Layout.Column = [1,3];
 %
 uit(1) = uitable(uig);
-uit(1).Tag = 'indIn';
+uit(1).Tag = 'indIn & depIn';
 uit(1).ColumnWidth = 'fit';
 uit(1).ColumnEditable = true;
-uit(1).CellEditCallback = {@megTableClBk,1};
+uit(1).CellEditCallback = @megTableClBk;
 uit(1).Layout.Row = [2,4];
-uit(1).Layout.Column = [1,2];
-uit(1).Tooltip = 'Independent variables';
-%
-ui1 = uilabel(uig);
-ui1.Text = 'depIn';
-ui1.HorizontalAlignment = 'center';
-ui1.Layout.Row = 1;
-ui1.Layout.Column = 3;
-%
-uit(2) = uitable(uig);
-uit(2).Tag = 'depIn';
-uit(2).ColumnWidth = 'fit';
-uit(2).ColumnEditable = true;
-uit(2).CellEditCallback = {@megTableClBk,2};
-uit(2).Layout.Row = [2,4];
-uit(2).Layout.Column = 3;
-uit(2).Tooltip = 'Dependent variables';
+uit(1).Layout.Column = [1,3];
+uit(1).Tooltip = 'Input: independent and dependent variables';
 %
 %%% Input Spinners
 %
 ui2 = uilabel(uig);
-ui2.Text = 'Rows';
+ui2.Text = 'Rows (In)';
 ui2.HorizontalAlignment = 'center';
 ui2.Layout.Row = 5;
 ui2.Layout.Column = 2;
@@ -193,32 +177,18 @@ uis(3).Tooltip = 'Number of columns for depIn';
 %%% Output Tables
 %
 ui5 = uilabel(uig);
-ui5.Text = 'indOut';
+ui5.Text = 'Out';
 ui5.HorizontalAlignment = 'center';
 ui5.Layout.Row = 1;
-ui5.Layout.Column = [4,5];
+ui5.Layout.Column = [4,6];
 %
-uot(1) = uitable(uig);
-uot(1).Tag = 'indOut';
-uot(1).ColumnWidth = 'fit';
-uot(1).ColumnEditable = false;
-uot(1).Layout.Row = 2;
-uot(1).Layout.Column = [4,5];
-uot(1).Tooltip = 'Minimized independent variables';
-%
-ui6 = uilabel(uig);
-ui6.Text = 'depOut';
-ui6.HorizontalAlignment = 'center';
-ui6.Layout.Row = 1;
-ui6.Layout.Column = 6;
-%
-uot(2) = uitable(uig);
-uot(2).Tag = 'depOut';
-uot(2).ColumnWidth = 'fit';
-uot(2).ColumnEditable = false;
-uot(2).Layout.Row = 2;
-uot(2).Layout.Column = 6;
-uot(2).Tooltip = 'Minimized dependent variables';
+uit(2) = uitable(uig);
+uit(2).Tag = 'indOut & depOut';
+uit(2).ColumnWidth = 'fit';
+uit(2).ColumnEditable = false;
+uit(2).Layout.Row = 2;
+uit(2).Layout.Column = [4,6];
+uit(2).Tooltip = 'Output: minimized independent and dependent variables';
 %
 %%% Expression text area
 %
@@ -272,9 +242,12 @@ svh = @megSetVals;
 %
 %% Callback Functions %%
 %
-	function megTableClBk(src,evt,idx)
+	function megTableClBk(src,evt)
 		idr = evt.Indices(1);
 		idc = evt.Indices(2);
+		nic = size(args{1},2);
+		idx = 1+(idc>nic);
+		jdc = idc-(idx-1)*nic;
 		tmp = char(src.Data{idr,idc});
 		switch tmp
 			case '-'
@@ -285,9 +258,9 @@ svh = @megSetVals;
 				one = str2double(tmp);
 		end
 		if istable(args{idx})
-			args{idx}{idr,idc} = one;
+			args{idx}{idr,jdc} = one;
 		else % numeric
-			args{idx}(idr,idc) = one;
+			args{idx}(idr,jdc) = one;
 		end
 		megUpDate()
 	end
@@ -348,7 +321,12 @@ svh = @megSetVals;
 		iInp = megMat2Table(2, dbg.options.used.indNames, iIM);
 		dInp = megMat2Table(5, dbg.options.used.depNames, dIM);
 		%
-		set([uit,uot],{'Data'},{iInp;dInp;iOut;dOut})
+		set(uit,{'Data'},{[iInp,dInp];[iOut,dOut]})
+		vnm = [...
+			compose("ind\n%s",string(dbg.options.used.indNames)),...
+			compose("dep\n%s",string(dbg.options.used.depNames))];
+		set(uit,{'ColumnName'},repmat({cellstr(vnm)},2,1))
+		drawnow()
 		%
 		if (fgc*[0.298936;0.587043;0.114021])<0.54 % lightmode
 			rSty = uistyle('BackgroundColor',[0.95,0.85,0.85]); % off
@@ -362,14 +340,13 @@ svh = @megSetVals;
 			iSty = uistyle('BackgroundColor',[0.20,0.20,0.20]); % NA
 		end
 		%
-		uiC = {uit(1),uit(2),uot(1),uot(2)};
-		xxM = {   iIM,   dIM,   iOM,   dOM};
-		for kk = 1:4
-			removeStyle(uiC{kk})
-			megGuiStyle(uiC{kk},rSty,xxM{kk}==0) % off
-			megGuiStyle(uiC{kk},fSty,xxM{kk}==1) % on
-			megGuiStyle(uiC{kk},dSty,xxM{kk}==2) % DC
-			megGuiStyle(uiC{kk},iSty,xxM{kk}==5) % NA
+		xxM = {[iIM,dIM],[iOM,dOM]};
+		for kk = 1:2
+			removeStyle(uit(kk))
+			megGuiStyle(uit(kk),rSty,xxM{kk}==0) % off
+			megGuiStyle(uit(kk),fSty,xxM{kk}==1) % on
+			megGuiStyle(uit(kk),dSty,xxM{kk}==2) % DC
+			megGuiStyle(uit(kk),iSty,xxM{kk}==5) % NA
 		end
 		drawnow()
 	end

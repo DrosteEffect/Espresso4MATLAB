@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>matEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-03-15">
+<meta name="DC.date" content="2026-10-15">
 <meta name="DC.source" content="matEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -377,7 +377,7 @@ depOut =
 </pre>
 <h2 id="12">Output 3: <tt>expr</tt>
 </h2>
-<p>A character vector containing one Boolean expression per dependent-variable, separated by newlines. Expressions use MATLAB logical syntax: <tt>~</tt> (NOT), <tt>&amp;</tt> (AND), and | (OR). The independent-variable and dependent-variable names are obtained from either table columns/variables, or from options <tt>indNames</tt> &amp; <tt>depNames</tt>, or are generated automagically. Product terms are parenthesized when they contain multiple literals.</p>
+<p>A character vector containing one Boolean expression per dependent-variable, separated by newlines. Expressions use MATLAB logical syntax: <tt>~</tt> (NOT), <tt>&amp;</tt> (AND), and | (OR). The independent-variable and dependent-variable names are obtained from either table columns/variables, or from options <tt>indNames</tt> &amp; <tt>depNames</tt>, or are generated automagically.</p>
 <pre class="codeinput">[~,~,expr] = matEspresso(indIn,depIn)
 </pre>
 <pre class="codeoutput">expr =
@@ -427,18 +427,16 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.051353
-    matEspresso: 0.056018
+       Espresso: 0.060863
+    matEspresso: 0.063873
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
-<tt>matEspresso</tt> passes the input data to <tt>Espresso</tt> via a temporary <tt>.PLA</tt> file stored in <tt>tempdir</tt>. By default these are deleted after use (and might end up in the desktop's recycling bin). Note that you can:</p>
+<tt>matEspresso</tt> passes the input data to <tt>Espresso</tt> via a temporary <tt>.PLA</tt> file stored in <tt>tempdir</tt>. By default these are permanently deleted after the processing is completed. Note that you can:</p>
 <div>
 <ul>
 <li>Use option <tt>rmTemp</tt> to control if this file is automatically deleted or not.</li>
 <li>Get the filepath from the 4th output <tt>debug.system.tempPLA</tt>.</li>
-<li>Set MATLAB's recycle state: <a href="https://www.mathworks.com/help/matlab/ref/recycle.html">https://www.mathworks.com/help/matlab/ref/recycle.html</a>
-</li>
 </ul>
 </div>
 <h2 id="15">
@@ -512,7 +510,7 @@ indIn = [true,false; true,true]
 indOut = matEspresso(indIn)
 %% Both |indIn| and |depIn| Arguments
 %
-% With two input arguments, |depIn| explicitly defines the required 
+% With two input arguments, |depIn| explicitly defines the required
 % true/false/DC/NA values for each row of the truth table.
 % Note that |indIn| and |depIn| must have the same number of rows.
 % Each column of |indIn| represents one independent-variable, whereas
@@ -656,10 +654,9 @@ depIn = [1,0; 0,1; 0,2]
 %
 % A character vector containing one Boolean expression per
 % dependent-variable, separated by newlines. Expressions use MATLAB logical
-% syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and 
+% syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
-% Product terms are parenthesized when they contain multiple literals.
 %
 [~,~,expr] = matEspresso(indIn,depIn)
 %% Output 4: |debug|
@@ -678,12 +675,11 @@ dbg.time
 %% Temporary File
 %
 % |matEspresso| passes the input data to |Espresso| via a temporary |.PLA|
-% file stored in |tempdir|. By default these are deleted after use (and
-% might end up in the desktop's recycling bin). Note that you can:
+% file stored in |tempdir|. By default these are permanently deleted after
+% the processing is completed. Note that you can:
 %
 % * Use option |rmTemp| to control if this file is automatically deleted or not.
 % * Get the filepath from the 4th output |debug.system.tempPLA|.
-% * Set MATLAB's recycle state: <https://www.mathworks.com/help/matlab/ref/recycle.html>
 %
 %% |matEspressoGUI| Interactive Demo
 %

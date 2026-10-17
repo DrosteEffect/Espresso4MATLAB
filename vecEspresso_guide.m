@@ -1,9 +1,10 @@
 %% |vecEspresso| User Guide
 %
 % The function |vecEspresso| is a wrapper of the function |matEspresso|
-% (itself a wrapper of |Espresso| executable). It provides drop-in
-% compatibility with the |minTruthtable| function (FEX 37118) while
-% leveraging |Espresso|'s superior performance on large problems.
+% (itself a wrapper of |Espresso| executable). It is largely compatible
+% with <https://www.mathworks.com/matlabcentral/fileexchange/37118
+% |minTruthtable|> while leveraging |Espresso|'s superior performance
+% on large problems (i.e. many minterms or independent variables).
 %
 % |vecEspresso| accepts a truth-vector (a vector representing all
 % possible combinations of Boolean variables) and returns minimized
@@ -39,11 +40,13 @@
 %   Position 2 -> binary 10 -> defined as true  '1'
 %   Position 3 -> binary 11 -> defined as false '0'
 %
-% Note that |minTruthtable| uses the convention that the binary first
-% column (leftmost) is the most significant bit, i.e. MSB -> LSB.
-% For example, a 3-independent-variable function with variables A, B, C:
+% The binary columns are ordered from the most significant bit to the
+% least significant bit, i.e. MSB -> LSB. Independent-variable names
+% correspond to columns from left to right.
+% For example, with three independent-variables named A, B, and C:
 %
-% * Column order in patterns: C  B  A  (left to right)
+% * Column order in patterns: A B C
+% * Bit significance: MSB to LSB
 % * Binary counting: 0=000, 1=001, 2=010, 3=011, 4=100, ... k=MSB:LSB ...
 %
 %% Input: Text
@@ -128,14 +131,15 @@ vecEspresso('01011010')
 % * |'1'| or 1: independent-variable must be true
 % * |'-'| or 2: independent-variable is not constrained (don't care / DC)
 %
-% The column order follows |minTruthtable| convention where column 1
-% is the most significant independent-variable (i.e. MSB of the binary
-% number). For a 4-independent-variable function:
+% Column 1 is the most significant independent-variable, i.e. the MSB
+% of the binary number. Independent-variable names correspond to columns
+% from left to right. For a 4-independent-variable function:
 %
-%   Name:    D  C  B  A
-%   Column:  1  2  3  4
+%   Name:   A B C D
+%   Column: 1 2 3 4
+%   Weight: 8 4 2 1
 %
-%   Pattern: '1010' -> D=1, C=0, B=1, A=0.
+%   Pattern: '1010' -> A=1, B=0, C=1, D=0.
 %
 Bins = vecEspresso('0000111100110011')
 %% Output 2: |inps|
@@ -180,8 +184,9 @@ Bins = vecEspresso('0000111100110011')
 %
 % A scalar structure containing diagnostic information (see |matEspresso|):
 [~,~,~,~,~,debug] = vecEspresso('0110')
-debug.time        % Timing information
+debug.time % Timing information
 %% Interesting Edge-Cases
+%
 [~,~,~,ott] = vecEspresso('1111') % Constant-true function, output remains true
 [~,~,~,ott] = vecEspresso('0000') % Constant-false function, output remains false
 [~,~,~,ott] = vecEspresso('----') % DCs treated as all false (conservative)
@@ -209,7 +214,7 @@ tt = '011-01-0';
 [~,~,~,ottE,exprE] = vecEspresso(tt)
 %% |minTruthtable| Compatibility
 %
-% |vecEspresso| is generally a drop-in replacement for |minTruthtable|,
+% |vecEspresso| is a largely compatible replacement for |minTruthtable|,
 % with some key differences.
 %
 % *|vecEspresso| supports:*
@@ -247,15 +252,15 @@ tt = '011-01-0';
 %
 % *When to use |vecEspresso|:*
 %
-% * Working with more than 10 independent-variables,
+% * Working with >10 independent-variables,
 % * Truth tables larger than 2^15 elements,
-% * Speed is more important than guaranteed optimality,
 % * Working with very sparse truth tables (few true positions).
 %
 % *When to use |minTruthtable|:*
 %
+% * Working with <=10 independent-variables,
+% * Truth tables smaller than 2^15 elements,
 % * Need guaranteed optimal solution (use with 'e' flag),
-% * Working with <=10 independent-variables where speed isn't critical,
 % * Prefer Quine-McCluskey's aggressive DC absorption,
 % * Want to verify results against a different algorithm.
 %
@@ -278,6 +283,7 @@ tt = '011-01-0';
 %
 % *|minTruthtable| prioritizes:*
 %
+% * Speed for small problems
 % * Exact optimality (when using 'e' flag)
 % * Maximal term coverage
 % * Aggressive don't-care (DC) absorption
@@ -297,10 +303,11 @@ tt = '011-01-0';
 % |vecEspresso| excels with larger problems. This would be impractical for
 % |minTruthtable| but |vecEspresso| handles it efficiently using
 % |Espresso|'s heuristic algorithms.
-% For example, a 16-independent-variable truth-table (65,536 elements):
 %
-tt = repmat('0', 1, 2^16); % 16 independent-variables
-tt([1, 100, 1000, 10000, 50000]) = '1';  % 5 true minterms
+% For example, a 17-independent-variable truth-table (131072 elements):
+%
+tt = repmat('0', 1, 2^17); % 17 independent-variables
+tt([1, 123, 1234, 12345, 54321]) = '1';  % 5 true minterms
 tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc

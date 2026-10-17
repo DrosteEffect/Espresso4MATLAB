@@ -25,14 +25,9 @@ This project exposes Espresso's minimization capabilities to MATLAB users while 
 ## Included Files ##
 
 - `matEspresso.m`: core MATLAB wrapper for Espresso. Accepts independent/dependent-variable tables or matrices and returns minimized results.
-
 - `matEspressoGUI.m`: interactive GUI for exploring truth-table minimization using MATLAB `uitable` components.
-
-- `vecEspresso.m`: truth-vector interface built on top of `matEspresso`, generally providing drop-in compatibility with `minTruthtable` while scaling better to larger problems.
-
+- `vecEspresso.m`: truth-vector interface built on top of `matEspresso`, largely compatible with `minTruthtable` while scaling better to larger problems.
 - `matEspresso_guide.m` & `vecEspresso_guide.m`: MATLAB `publish` documentation
-
-- `TempFileCleanup.m`: utility class for robust cleanup of temporary files created during `Espresso` execution.
 
 ## Requirements ##
 

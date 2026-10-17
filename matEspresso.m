@@ -152,9 +152,8 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 % * Symbolic Math Toolbox iff using the <simplify> option.
 % * Espresso executable is on the MATLAB search path, or on the
 %   system PATH, or its location is specified via <exePath> option.
-% * TempFileCleanup.m from <https://www.mathworks.com/matlabcentral/fileexchange/183127>
 %
-% See also MATESPRESSOGUI VECESPRESSO TEMPFILECLEANUP SIMPLIFY SYSTEM
+% See also MATESPRESSOGUI VECESPRESSO ONCLEANUP SIMPLIFY SYSTEM
 % CATEGORICAL CATEGORIES ARRAY2TABLE TABLE2ARRAY ISVARNAME
 ticH = tic();
 fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));
@@ -295,8 +294,7 @@ fnm = [tempname(),'.pla'];
 assert(fid>2,'SC:matEspresso:fopen:message','%s\n',msg)
 %
 if stpo.rmTemp
-	obj = TempFileCleanup(fid,fnm,recycle()); %#ok<NASGU>
-	recycle off
+	obj = onCleanup(@()meCleanup(fid,fnm));
 end
 %
 % Generate input PLA format string:
@@ -314,6 +312,8 @@ mePrintf(fid,'.r %d\n','0',indChars,depChars); % OFF
 fprintf(fid,'.e');
 %
 fclose(fid);
+%
+clear indChars depChars
 %
 %% Espresso Execution %%
 %
@@ -386,7 +386,7 @@ else
 	booData(booChar=='-') = 2; % don't care (DC).
 	booData(booChar=='~') = 5; % not applicable (NA). Tilde '~' appears in
 	% dependent-variable output columns when <Eout> combines 'f' with other
-	% sets (fd/fr/fdr). Espresso uses '~' to indicate that a covering
+	% sets (fd/fr/fdr). Espresso uses tilde to indicate that a covering
 	% pattern does not contribute to a particular dependent-variable.
 	%
 	indOut = booData(:,1:indCnt);
@@ -414,6 +414,18 @@ debug.time.(mfilename) = toc(ticH);
 %
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspresso
+function meCleanup(fid,fnm)
+try %#ok<TRYNC>
+	fclose(fid);
+end
+try %#ok<TRYNC>
+	old = recycle();
+	obj = onCleanup(@()recycle(old));
+	recycle off
+	delete(fnm);
+end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meCleanup
 function [indOut,depOut] = meOutType(otyp, indOut,depOut, indNames,depNames, outCats)
 switch otyp
 	case 'cat'

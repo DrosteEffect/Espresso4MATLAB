@@ -1,8 +1,8 @@
 function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 % Truth-vector Boolean minimization using Espresso (via matEspresso).
 %
-% vecEspresso provides a truth-vector interface to matEspresso, offering
-% drop-in compatibility with minTruthtable while using the Espresso
+% vecEspresso provides a truth-vector interface to matEspresso, offering a
+% largely compatible replacement for minTruthtable while using the Espresso
 % heuristic logic minimizer for superior performance on large problems.
 %
 %%% Syntax %%%
@@ -13,7 +13,7 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %
 % vecEspresso minimizes a Boolean function given as a truth-vector,
 % returning covering patterns and a minimized truth-vector. It provides
-% drop-in compatibility with minTruthtable's core functionality while
+% very good compatibility with minTruthtable's core functionality while
 % leveraging Espresso's efficient algorithms. However, results may differ!
 %
 %% Terminology %%
@@ -24,7 +24,7 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %
 %% |minTruthtable| Compatibility %%
 %
-% Generally drop-in replacement but some important differences:
+% Mostly compatible core functionality, but some important differences:
 %
 % - Uses Espresso instead of Quine-McCluskey algorithm,
 % - <tt> not limited to 2^15 elements,
@@ -82,6 +82,9 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %        - Numeric/logical vector: 0/false, 1/true, 2 (don't-care,DC).
 %        Length must be a power of 2, representing all 2^N combinations
 %        of N boolean independent-variables in binary counting order.
+%        Binary columns are ordered MSB-to-LSB from left to right, and
+%        generated independent-variable names correspond to that order:
+%        column 1 is A, column 2 is B, column 3 is C, etc.
 %   <options> = Name-value pairs controlling minimization behavior:
 %        'preserveDC' = logical scalar where:
 %        - false**: DCs are consumed (output contains only true & false)
@@ -94,7 +97,9 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %          - <tt> = char            -> char matrix  (values '0', '1', '-')
 %          - <tt> = string          -> string array (values '0', '1', '-')
 %          - <tt> = numeric/logical -> int8 matrix  (values 0, 1, 2)
-%          Each row of <Bins> represents one product term.
+%          Each row of <Bins> represents one product term. Columns are
+%          ordered MSB-to-LSB from left to right, and correspond directly
+%          to the indepent variable names used in <expr>.
 %          nTerms = number of product terms in the minimized expression,
 %          note that nTerms is 0 when the function is constant false.
 %   inps = Double scalar, the gate complexity of the minimized function.
@@ -182,9 +187,6 @@ assert(nnz(size(ttInp)~=1)<2,...
 assert(2^ttPwr==ttLen,...
 	'SC:vecEspresso:tt:NotPowerTwo',...
 	'Length of <tt> must be a power of 2. Provided length: %d',ttLen)
-assert(ttPwr<=52,...
-	'SC:vecEspresso:tt:TooLong',...
-	'Input <tt> must not be longer than 2^52 elements. Provided length: %d',ttLen)
 %
 if ischar(ttInp)
 	assert(all(ismember(ttInp,'012-?')),...
@@ -240,26 +242,41 @@ cnts = sum(indOut~=2,2);
 inps = sum(cnts(cnts>1)) + (numel(cnts)>1)*numel(cnts);
 %
 % Build Nums: Find covered indices for each pattern
+% Build Nums: expand each covering pattern into its covered indices.
 Nums = cell(nTerms,1);
 if ttPwr>0 && nTerms>0
-	rVec = 0:ttLen-1;
-	tVec = uint64(rVec(:));
-	allX = zeros(ttLen,ttPwr,'int8');
-	for bit = ttPwr:-1:1 % (LSB):-1:(MSB)
-		allX(:,bit) = bitand(tVec,1)~=0;
-		tVec = bitshift(tVec,-1);
-	end
+	% Lower memory:
+	revPwr = ttPwr-1:-1:0;
+	revBit = 2.^revPwr(:);
 	for ii = 1:nTerms
-		indRow = indOut(ii,:);
-		tmpVec = true(ttLen,1);
-		for jj = 1:ttPwr
-			if indRow(jj)~=2
-				tmpVec = tmpVec & allX(:,jj)==indRow(jj);
-			end
-		end
-		idx = find(tmpVec)-1;
-		Nums{ii} = idx.';
+	    indRow = indOut(ii,:);
+	    oneIdx = (indRow==1) * revBit;
+	    twoIdx = 0;
+		tmpIdx = reshape(find(indRow==2),1,[]);
+	    for jj = tmpIdx(end:-1:1)
+	        twoIdx(end+1:2*end) = twoIdx + revBit(jj);
+	    end
+	    Nums{ii} = oneIdx+twoIdx;
 	end
+	% Original:
+	% rVec = 0:ttLen-1;
+	% tVec = uint64(rVec(:));
+	% allX = zeros(ttLen,ttPwr,'int8');
+	% for bit = ttPwr:-1:1 % (LSB):-1:(MSB)
+	% 	allX(:,bit) = bitand(tVec,1)~=0;
+	% 	tVec = bitshift(tVec,-1);
+	% end
+	% for ii = 1:nTerms
+	% 	indRow = indOut(ii,:);
+	% 	tmpVec = true(ttLen,1);
+	% 	for jj = 1:ttPwr
+	% 		if indRow(jj)~=2
+	% 			tmpVec = tmpVec & allX(:,jj)==indRow(jj);
+	% 		end
+	% 	end
+	% 	idx = find(tmpVec)-1;
+	% 	Nums{ii} = idx.';
+	% end
 else
 	for ii = 1:nTerms
 		Nums{ii} = 0;

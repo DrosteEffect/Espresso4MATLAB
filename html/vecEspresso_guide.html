@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>vecEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-03-15">
+<meta name="DC.date" content="2026-10-15">
 <meta name="DC.source" content="vecEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -79,7 +79,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <h1>
 <tt>vecEspresso</tt> User Guide</h1>
 <!--introduction-->
-<p>The function <tt>vecEspresso</tt> is a wrapper of the function <tt>matEspresso</tt> (itself a wrapper of <tt>Espresso</tt> executable). It provides drop-in compatibility with the <tt>minTruthtable</tt> function (FEX 37118) while leveraging <tt>Espresso</tt>'s superior performance on large problems.</p>
+<p>The function <tt>vecEspresso</tt> is a wrapper of the function <tt>matEspresso</tt> (itself a wrapper of <tt>Espresso</tt> executable). It is largely compatible with <a href="https://www.mathworks.com/matlabcentral/fileexchange/37118"><tt>minTruthtable</tt></a> while leveraging <tt>Espresso</tt>'s superior performance on large problems (i.e. many minterms or independent variables).</p>
 <p>
 <tt>vecEspresso</tt> accepts a truth-vector (a vector representing all possible combinations of Boolean variables) and returns minimized covering patterns. This interface matches <tt>minTruthtable</tt>'s core functionality while using a more efficient minimization algorithm.</p>
 <p>Refer to the <tt>matEspresso</tt> documentation for details on obtaining, installing, and configuring the <tt>Espresso</tt> executable.</p>
@@ -169,10 +169,11 @@ Position <span class="string">1</span> <span class="string">-&gt;</span> <span c
 Position <span class="string">2</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">10</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">true</span>  <span class="string">'1'</span>
 Position <span class="string">3</span> <span class="string">-&gt;</span> <span class="string">binary</span> <span class="string">11</span> <span class="string">-&gt;</span> <span class="string">defined</span> <span class="string">as</span> <span class="string">false</span> <span class="string">'0'</span>
 </pre>
-<p>Note that <tt>minTruthtable</tt> uses the convention that the binary first column (leftmost) is the most significant bit, i.e. MSB -&gt; LSB. For example, a 3-independent-variable function with variables A, B, C:</p>
+<p>The binary columns are ordered from the most significant bit to the least significant bit, i.e. MSB -&gt; LSB. Independent-variable names correspond to columns from left to right. For example, with three independent-variables named A, B, and C:</p>
 <div>
 <ul>
-<li>Column order in patterns: C B A (left to right)</li>
+<li>Column order in patterns: A B C</li>
+<li>Bit significance: MSB to LSB</li>
 <li>Binary counting: 0=000, 1=001, 2=010, 3=011, 4=100, ... k=MSB:LSB ...</li>
 </ul>
 </div>
@@ -341,11 +342,12 @@ ott =
 <tt>'-'</tt> or 2: independent-variable is not constrained (don't care / DC)</li>
 </ul>
 </div>
-<p>The column order follows <tt>minTruthtable</tt> convention where column 1 is the most significant independent-variable (i.e. MSB of the binary number). For a 4-independent-variable function:</p>
-<pre class="language-matlab">Name:    D  C  <span class="string">B</span>  <span class="string">A</span>
-Column:  1  2  3  4
+<p>Column 1 is the most significant independent-variable, i.e. the MSB of the binary number. Independent-variable names correspond to columns from left to right. For a 4-independent-variable function:</p>
+<pre class="language-matlab">Name:   A B <span class="string">C</span> <span class="string">D</span>
+Column: 1 2 3 4
+Weight: 8 4 2 1
 </pre>
-<pre class="language-matlab">Pattern: <span class="string">'1010'</span> -&gt; D=1, C=0, B=1, A=0.
+<pre class="language-matlab">Pattern: <span class="string">'1010'</span> -&gt; A=1, B=0, C=1, D=0.
 </pre>
 <pre class="codeinput">Bins = vecEspresso(<span class="string">'0000111100110011'</span>)
 </pre>
@@ -427,7 +429,7 @@ ott =
 </h2>
 <p>A scalar structure containing diagnostic information (see <tt>matEspresso</tt>):</p>
 <pre class="codeinput">[~,~,~,~,~,debug] = vecEspresso(<span class="string">'0110'</span>)
-debug.time        <span class="comment">% Timing information</span>
+debug.time <span class="comment">% Timing information</span>
 </pre>
 <pre class="codeoutput">debug = 
   struct with fields:
@@ -439,9 +441,9 @@ debug.time        <span class="comment">% Timing information</span>
 ans = 
   struct with fields:
 
-       Espresso: 0.05067
-    matEspresso: 0.053079
-    vecEspresso: 0.055771
+       Espresso: 0.053466
+    matEspresso: 0.056368
+    vecEspresso: 0.058459
 </pre>
 <h2 id="16">Interesting Edge-Cases</h2>
 <pre class="codeinput">[~,~,~,ott] = vecEspresso(<span class="string">'1111'</span>) <span class="comment">% Constant-true function, output remains true</span>
@@ -496,7 +498,7 @@ exprE =
 <h2 id="18">
 <tt>minTruthtable</tt> Compatibility</h2>
 <p>
-<tt>vecEspresso</tt> is generally a drop-in replacement for <tt>minTruthtable</tt>, with some key differences.</p>
+<tt>vecEspresso</tt> is a largely compatible replacement for <tt>minTruthtable</tt>, with some key differences.</p>
 <p>
 <b><tt>vecEspresso</tt> supports:</b>
 </p>
@@ -556,9 +558,8 @@ exprE =
 </p>
 <div>
 <ul>
-<li>Working with more than 10 independent-variables,</li>
+<li>Working with &gt;10 independent-variables,</li>
 <li>Truth tables larger than 2^15 elements,</li>
-<li>Speed is more important than guaranteed optimality,</li>
 <li>Working with very sparse truth tables (few true positions).</li>
 </ul>
 </div>
@@ -567,8 +568,9 @@ exprE =
 </p>
 <div>
 <ul>
+<li>Working with &lt;=10 independent-variables,</li>
+<li>Truth tables smaller than 2^15 elements,</li>
 <li>Need guaranteed optimal solution (use with 'e' flag),</li>
-<li>Working with &lt;=10 independent-variables where speed isn't critical,</li>
 <li>Prefer Quine-McCluskey's aggressive DC absorption,</li>
 <li>Want to verify results against a different algorithm.</li>
 </ul>
@@ -600,6 +602,7 @@ exprE =
 </p>
 <div>
 <ul>
+<li>Speed for small problems</li>
 <li>Exact optimality (when using 'e' flag)</li>
 <li>Maximal term coverage</li>
 <li>Aggressive don't-care (DC) absorption</li>
@@ -636,14 +639,15 @@ ottE =
 </pre>
 <h2 id="20">Example: Large Truth-Table Performance</h2>
 <p>
-<tt>vecEspresso</tt> excels with larger problems. This would be impractical for <tt>minTruthtable</tt> but <tt>vecEspresso</tt> handles it efficiently using <tt>Espresso</tt>'s heuristic algorithms. For example, a 16-independent-variable truth-table (65,536 elements):</p>
-<pre class="codeinput">tt = repmat(<span class="string">'0'</span>, 1, 2^16); <span class="comment">% 16 independent-variables</span>
-tt([1, 100, 1000, 10000, 50000]) = <span class="string">'1'</span>;  <span class="comment">% 5 true minterms</span>
+<tt>vecEspresso</tt> excels with larger problems. This would be impractical for <tt>minTruthtable</tt> but <tt>vecEspresso</tt> handles it efficiently using <tt>Espresso</tt>'s heuristic algorithms.</p>
+<p>For example, a 17-independent-variable truth-table (131072 elements):</p>
+<pre class="codeinput">tt = repmat(<span class="string">'0'</span>, 1, 2^17); <span class="comment">% 17 independent-variables</span>
+tt([1, 123, 1234, 12345, 54321]) = <span class="string">'1'</span>;  <span class="comment">% 5 true minterms</span>
 tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc
 </pre>
-<pre class="codeoutput">Elapsed time is 0.765991 seconds.
+<pre class="codeoutput">Elapsed time is 1.446235 seconds.
 </pre>
 <p class="footer">
 <br>
@@ -656,9 +660,10 @@ toc
 %% |vecEspresso| User Guide
 %
 % The function |vecEspresso| is a wrapper of the function |matEspresso|
-% (itself a wrapper of |Espresso| executable). It provides drop-in
-% compatibility with the |minTruthtable| function (FEX 37118) while
-% leveraging |Espresso|'s superior performance on large problems.
+% (itself a wrapper of |Espresso| executable). It is largely compatible
+% with <https://www.mathworks.com/matlabcentral/fileexchange/37118
+% |minTruthtable|> while leveraging |Espresso|'s superior performance
+% on large problems (i.e. many minterms or independent variables).
 %
 % |vecEspresso| accepts a truth-vector (a vector representing all
 % possible combinations of Boolean variables) and returns minimized
@@ -688,17 +693,19 @@ toc
 % For example, a 4-element truth-vector has 2-bits/independent-variables:
 %
 %   tt = '1010'                               tt ↓
-%                                                
+%
 %   Position 0 -> binary 00 -> defined as true  '1'
 %   Position 1 -> binary 01 -> defined as false '0'
 %   Position 2 -> binary 10 -> defined as true  '1'
 %   Position 3 -> binary 11 -> defined as false '0'
 %
-% Note that |minTruthtable| uses the convention that the binary first
-% column (leftmost) is the most significant bit, i.e. MSB -> LSB.
-% For example, a 3-independent-variable function with variables A, B, C:
+% The binary columns are ordered from the most significant bit to the
+% least significant bit, i.e. MSB -> LSB. Independent-variable names
+% correspond to columns from left to right.
+% For example, with three independent-variables named A, B, and C:
 %
-% * Column order in patterns: C  B  A  (left to right)
+% * Column order in patterns: A B C
+% * Bit significance: MSB to LSB
 % * Binary counting: 0=000, 1=001, 2=010, 3=011, 4=100, ... k=MSB:LSB ...
 %
 %% Input: Text
@@ -726,7 +733,7 @@ toc
 % Numeric and logical vectors are accepted using these values:
 %
 %    false: 0 == false
-%     true: 1 == true  
+%     true: 1 == true
 %       DC: 2
 %
 % For example, a 2-independent-variable function that is true at positions 1 and 3:
@@ -783,20 +790,21 @@ vecEspresso('01011010')
 % * |'1'| or 1: independent-variable must be true
 % * |'-'| or 2: independent-variable is not constrained (don't care / DC)
 %
-% The column order follows |minTruthtable| convention where column 1
-% is the most significant independent-variable (i.e. MSB of the binary
-% number). For a 4-independent-variable function:
+% Column 1 is the most significant independent-variable, i.e. the MSB
+% of the binary number. Independent-variable names correspond to columns
+% from left to right. For a 4-independent-variable function:
 %
-%   Name:    D  C  B  A
-%   Column:  1  2  3  4
+%   Name:   A B C D
+%   Column: 1 2 3 4
+%   Weight: 8 4 2 1
 %
-%   Pattern: '1010' -> D=1, C=0, B=1, A=0.
+%   Pattern: '1010' -> A=1, B=0, C=1, D=0.
 %
 Bins = vecEspresso('0000111100110011')
 %% Output 2: |inps|
 %
 % The |inps| output estimates the number of logic gate-inputs required for
-% a sum-of-products implementation. To provide a rough measure of 
+% a sum-of-products implementation. To provide a rough measure of
 % PLA-circuit implementation complexity it counts:
 %
 % * The number of literals in multi-literal product terms (AND gate-inputs),
@@ -810,8 +818,8 @@ Bins = vecEspresso('0000111100110011')
 [Bins,inps] = vecEspresso('00011010')
 %% Output 3: |Nums|
 %
-% The |Nums| output is a cell array where each cell Nums{k} corresponds to 
-% row k in |Bins|, showing which 0-indexed truth-table positions that pattern 
+% The |Nums| output is a cell array where each cell Nums{k} corresponds to
+% row k in |Bins|, showing which 0-indexed truth-table positions that pattern
 % covers. This connection between patterns and covered positions is useful for:
 %
 % * Verifying complete coverage of all true positions
@@ -835,8 +843,9 @@ Bins = vecEspresso('0000111100110011')
 %
 % A scalar structure containing diagnostic information (see |matEspresso|):
 [~,~,~,~,~,debug] = vecEspresso('0110')
-debug.time        % Timing information
+debug.time % Timing information
 %% Interesting Edge-Cases
+%
 [~,~,~,ott] = vecEspresso('1111') % Constant-true function, output remains true
 [~,~,~,ott] = vecEspresso('0000') % Constant-false function, output remains false
 [~,~,~,ott] = vecEspresso('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH') % DCs treated as all false (conservative)
@@ -864,7 +873,7 @@ tt = '011-01-0';
 [~,~,~,ottE,exprE] = vecEspresso(tt)
 %% |minTruthtable| Compatibility
 %
-% |vecEspresso| is generally a drop-in replacement for |minTruthtable|,
+% |vecEspresso| is a largely compatible replacement for |minTruthtable|,
 % with some key differences.
 %
 % *|vecEspresso| supports:*
@@ -902,15 +911,15 @@ tt = '011-01-0';
 %
 % *When to use |vecEspresso|:*
 %
-% * Working with more than 10 independent-variables,
+% * Working with >10 independent-variables,
 % * Truth tables larger than 2^15 elements,
-% * Speed is more important than guaranteed optimality,
 % * Working with very sparse truth tables (few true positions).
-% 
+%
 % *When to use |minTruthtable|:*
 %
+% * Working with <=10 independent-variables,
+% * Truth tables smaller than 2^15 elements,
 % * Need guaranteed optimal solution (use with 'e' flag),
-% * Working with <=10 independent-variables where speed isn't critical,
 % * Prefer Quine-McCluskey's aggressive DC absorption,
 % * Want to verify results against a different algorithm.
 %
@@ -933,6 +942,7 @@ tt = '011-01-0';
 %
 % *|minTruthtable| prioritizes:*
 %
+% * Speed for small problems
 % * Exact optimality (when using 'e' flag)
 % * Maximal term coverage
 % * Aggressive don't-care (DC) absorption
@@ -950,12 +960,13 @@ tt = '011-01-0';
 %% Example: Large Truth-Table Performance
 %
 % |vecEspresso| excels with larger problems. This would be impractical for
-% |minTruthtable| but |vecEspresso| handles it efficiently using 
+% |minTruthtable| but |vecEspresso| handles it efficiently using
 % |Espresso|'s heuristic algorithms.
-% For example, a 16-independent-variable truth-table (65,536 elements):
 %
-tt = repmat('0', 1, 2^16); % 16 independent-variables
-tt([1, 100, 1000, 10000, 50000]) = '1';  % 5 true minterms
+% For example, a 17-independent-variable truth-table (131072 elements):
+%
+tt = repmat('0', 1, 2^17); % 17 independent-variables
+tt([1, 123, 1234, 12345, 54321]) = '1';  % 5 true minterms
 tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc
