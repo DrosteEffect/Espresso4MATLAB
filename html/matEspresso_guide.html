@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>matEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-10-17">
+<meta name="DC.date" content="2026-10-18">
 <meta name="DC.source" content="matEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -334,7 +334,7 @@ indOut =
  <tr><td><b>Dopo</b></td><td>logical scalar</td><td>false (default), true</td><td>Enable phase assignment optimization.</td><td><code>'-Dopo'</code></td></tr>
  <tr><td><b>Dpair</b></td><td>logical scalar</td><td>false (default), true</td><td>Enable pair minimization.</td><td><code>'-Dpair'</code></td></tr>
  <tr><td><b>Efast</b></td><td>logical scalar</td><td>false (default), true</td><td>Fast heuristic mode. Cannot be combined with <b>Dexact</b>.</td><td><code>'-efast'</code></td></tr>
- <tr><td><b>Eout</b></td><td>char vector / string scalar</td><td>'f' = true-set (default), 'd' = don't-care-set, 'r' = false-set. Or any combination in that order, e.g. 'fd', 'fdr', 'dr', etc.</td><td>Controls which cover sets <code>Espresso</code> returns.</td><td><code>'-o'</code></td></tr>
+ <tr><td><b>Eout</b></td><td>char vector / string scalar</td><td>'f' = true-set (default), 'd' = don't-care-set, 'r' = false-set. Or any combination in that order, e.g. 'fd', 'fdr', 'dr', etc.</td><td>Controls which cover sets <code>Espresso</code> returns. Note that <code>expr</code> is constructed using only the rows where <code>depOut</code> == true.</td><td><code>'-o'</code></td></tr>
 </table>
 </p>
 <p>The <tt>Espresso</tt> options are intentionally exposed only at a high level. For advanced <tt>Espresso</tt> configuration, consider post-processing the PLA yourself, or extending the wrapper, or calling Espresso directly.</p>
@@ -378,6 +378,7 @@ depOut =
 <h2 id="12">Output 3: <tt>expr</tt>
 </h2>
 <p>A character vector containing one Boolean expression per dependent-variable, separated by newlines. Expressions use MATLAB logical syntax: <tt>~</tt> (NOT), <tt>&amp;</tt> (AND), and | (OR). The independent-variable and dependent-variable names are obtained from either table columns/variables, or from options <tt>indNames</tt> &amp; <tt>depNames</tt>, or are generated automagically.</p>
+<p>Only those rows whose corresponding <tt>depOut</tt> values are true contribute to the expressions. Rows whose <tt>depOut</tt> values are all false, DC, or NA are ignored. Therefore if option <tt>Eout</tt> does not contain <tt>'f'</tt> then the expression is constant false, regardless of the input values.</p>
 <pre class="codeinput">[~,~,expr] = matEspresso(indIn,depIn)
 </pre>
 <pre class="codeoutput">expr =
@@ -427,8 +428,8 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.052859
-    matEspresso: 0.05733
+       Espresso: 0.052427
+    matEspresso: 0.056278
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
@@ -616,7 +617,7 @@ indOut = matEspresso(indIn,depIn)
 %  <tr><td><b>Dopo</b></td><td>logical scalar</td><td>false (default), true</td><td>Enable phase assignment optimization.</td><td><code>'-Dopo'</code></td></tr>
 %  <tr><td><b>Dpair</b></td><td>logical scalar</td><td>false (default), true</td><td>Enable pair minimization.</td><td><code>'-Dpair'</code></td></tr>
 %  <tr><td><b>Efast</b></td><td>logical scalar</td><td>false (default), true</td><td>Fast heuristic mode. Cannot be combined with <b>Dexact</b>.</td><td><code>'-efast'</code></td></tr>
-%  <tr><td><b>Eout</b></td><td>char vector / string scalar</td><td>'f' = true-set (default), 'd' = don't-care-set, 'r' = false-set. Or any combination in that order, e.g. 'fd', 'fdr', 'dr', etc.</td><td>Controls which cover sets <code>Espresso</code> returns.</td><td><code>'-o'</code></td></tr>
+%  <tr><td><b>Eout</b></td><td>char vector / string scalar</td><td>'f' = true-set (default), 'd' = don't-care-set, 'r' = false-set. Or any combination in that order, e.g. 'fd', 'fdr', 'dr', etc.</td><td>Controls which cover sets <code>Espresso</code> returns. Note that <code>expr</code> is constructed using only the rows where <code>depOut</code> == true.</td><td><code>'-o'</code></td></tr>
 % </table>
 % </html>
 %
@@ -657,6 +658,11 @@ depIn = [1,0; 0,1; 0,2]
 % syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
+%
+% Only those rows whose corresponding |depOut| values are true contribute
+% to the expressions. Rows whose |depOut| values are all false, DC, or NA
+% are ignored. Therefore if option |Eout| does not contain |'f'| then
+% the expression is constant false, regardless of the input values.
 %
 [~,~,expr] = matEspresso(indIn,depIn)
 %% Output 4: |debug|

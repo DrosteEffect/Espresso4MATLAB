@@ -28,7 +28,7 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %
 % - Uses Espresso instead of Quine-McCluskey algorithm,
 % - <tt> not limited to 2^15 elements,
-% - Espresso minimization options,
+% - Espresso minimization options (except Eout),
 % - Generally faster for problems with 10+ independent-variables,
 % - Accepts char/string/numeric input, returns char/string/numeric outputs.
 % - Numeric/logical <tt> returns int8 <Bins> and <ott>, not char as minTruthtable does.
@@ -159,6 +159,12 @@ switch nargin
 end
 %
 fnmC = fieldnames(opts);
+%
+assert(~any(strcmpi(fnmC,'Eout')),...
+	'SC:vecEspresso:Eout:NotSupported',...
+	'The option <Eout> is not supported by vecEspresso.')
+opts.Eout = 'f'; % Eout must be 'f' and nothing else!
+%
 idx1 = strcmpi(fnmC,'preserveDC');
 switch nnz(idx1)
 	case 0 % nothing to do

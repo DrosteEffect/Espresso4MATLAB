@@ -161,7 +161,7 @@ indOut = matEspresso(indIn,depIn)
 %  <tr><td><b>Dopo</b></td><td>logical scalar</td><td>false (default), true</td><td>Enable phase assignment optimization.</td><td><code>'-Dopo'</code></td></tr>
 %  <tr><td><b>Dpair</b></td><td>logical scalar</td><td>false (default), true</td><td>Enable pair minimization.</td><td><code>'-Dpair'</code></td></tr>
 %  <tr><td><b>Efast</b></td><td>logical scalar</td><td>false (default), true</td><td>Fast heuristic mode. Cannot be combined with <b>Dexact</b>.</td><td><code>'-efast'</code></td></tr>
-%  <tr><td><b>Eout</b></td><td>char vector / string scalar</td><td>'f' = true-set (default), 'd' = don't-care-set, 'r' = false-set. Or any combination in that order, e.g. 'fd', 'fdr', 'dr', etc.</td><td>Controls which cover sets <code>Espresso</code> returns.</td><td><code>'-o'</code></td></tr>
+%  <tr><td><b>Eout</b></td><td>char vector / string scalar</td><td>'f' = true-set (default), 'd' = don't-care-set, 'r' = false-set. Or any combination in that order, e.g. 'fd', 'fdr', 'dr', etc.</td><td>Controls which cover sets <code>Espresso</code> returns. Note that <code>expr</code> is constructed using only the rows where <code>depOut</code> == true.</td><td><code>'-o'</code></td></tr>
 % </table>
 % </html>
 %
@@ -202,6 +202,11 @@ depIn = [1,0; 0,1; 0,2]
 % syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
+%
+% Only those rows whose corresponding |depOut| values are true contribute
+% to the expressions. Rows whose |depOut| values are all false, DC, or NA
+% are ignored. Therefore if option |Eout| does not contain |'f'| then
+% the expression is constant false, regardless of the input values.
 %
 [~,~,expr] = matEspresso(indIn,depIn)
 %% Output 4: |debug|

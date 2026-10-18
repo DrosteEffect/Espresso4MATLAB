@@ -142,7 +142,10 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %            and (when option <Eout> combines 'f' with other sets) 5/~/NA.
 %   expr   = CharacterVector containing minimal Boolean expressions, one
 %            per dependent-variable, separated by newlines. Uses MATLAB
-%            syntax (~, &, |) with parenthesized product terms.
+%            syntax (~, &, |) with parenthesized product terms. Only rows
+%            with any <depOut>==true contribute to these expressions, rows
+%            with all <depOut>==false or DC or NA are ignored. Therefore if
+%            option <Eout> does not contain 'f' then <expr> is constant 0.
 %   debug  = ScalarStruct containing detailed information about the run,
 %            including timing, raw PLA data, and options used.
 %
@@ -567,6 +570,9 @@ for k = 1:numel(ofc)
 			assert(numel(arg)==3,...
 				'SC:matEspresso:outCats:NotThreeCategories',...
 				'Please provide three category names corresponding to [false,true,don''t-care].')
+			assert(~any(strcmpi(arg,'NA')),...
+				'SC:matEspresso:outCats:ForbiddenCategoryNA',...
+				'The category "NA" is not allowed in outCats.')
 		otherwise
 			error('SC:matEspresso:options:MissingCase','Please report this bug.')
 	end

@@ -243,7 +243,7 @@ tt = '011-01-0';
 % *|vecEspresso| additional features:*
 %
 % * |'preserveDC'| option to control don't-care (DC) handling,
-% * All |matEspresso| options (e.g. |'Dexact'|, |'Efast'|, etc.),
+% * |matEspresso| options (e.g. |'Dexact'|, |'Efast'|, etc., excluding |'Eout'|),
 % * Fifth output |expr| with boolean expression,
 % * Sixth output |debug| with diagnostic information,
 % * Supports numeric, logical, and string classes for input & output.
