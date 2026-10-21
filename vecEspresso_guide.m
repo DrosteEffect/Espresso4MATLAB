@@ -238,7 +238,7 @@ tt = '011-01-0';
 % *|vecEspresso| does not support:*
 %
 % * |minTruthtable| optimization flags ('e', 'Q', 'q', numeric levels),
-% * Verification flag 'v' (not needed - |Espresso| is well-tested).
+% * Verification flag 'v'.
 %
 % *|vecEspresso| additional features:*
 %

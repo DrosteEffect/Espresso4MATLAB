@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>vecEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-10-18">
+<meta name="DC.date" content="2026-10-20">
 <meta name="DC.source" content="vecEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -441,9 +441,9 @@ debug.time <span class="comment">% Timing information</span>
 ans = 
   struct with fields:
 
-       Espresso: 0.05947
-    matEspresso: 0.062215
-    vecEspresso: 0.063928
+       Espresso: 0.05244
+    matEspresso: 0.055163
+    vecEspresso: 0.056961
 </pre>
 <h2 id="16">Interesting Edge-Cases</h2>
 <pre class="codeinput">[~,~,~,ott] = vecEspresso(<span class="string">'1111'</span>) <span class="comment">% Constant-true function, output remains true</span>
@@ -527,7 +527,7 @@ exprE =
 <ul>
 <li>
 <tt>minTruthtable</tt> optimization flags ('e', 'Q', 'q', numeric levels),</li>
-<li>Verification flag 'v' (not needed - <tt>Espresso</tt> is well-tested).</li>
+<li>Verification flag 'v'.</li>
 </ul>
 </div>
 <p>
@@ -656,7 +656,7 @@ tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc
 </pre>
-<pre class="codeoutput">Elapsed time is 1.418891 seconds.
+<pre class="codeoutput">Elapsed time is 1.413649 seconds.
 </pre>
 <p class="footer">
 <br>
@@ -906,7 +906,7 @@ tt = '011-01-0';
 % *|vecEspresso| does not support:*
 %
 % * |minTruthtable| optimization flags ('e', 'Q', 'q', numeric levels),
-% * Verification flag 'v' (not needed - |Espresso| is well-tested).
+% * Verification flag 'v'.
 %
 % *|vecEspresso| additional features:*
 %

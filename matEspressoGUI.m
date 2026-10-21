@@ -16,10 +16,13 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 %% Input Arguments %%
 %
 % As per MATESPRESSO. Note that <indIn> and <depIn> must be numeric/table.
+% Note that table column/variable names are not preserved, as these may
+% change with user GUI interactions (e.g. by adding/removing columns).
 %
 %% Output Arguments %%
 %
 % As per MATESPRESSO: <indOut>, <depOut>, <expr>, <debug>.
+% Note that <indOut> and <depOut> are both int8 arrays only.
 %
 %% Dependencies %%
 %
@@ -355,12 +358,25 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%megNewFig
 function out = megArr2int8(pfx,arr)
 % Convert from numeric/logical to INT8. Applies to array or table columns.
-if isnumeric(arr)||islogical(arr)
+% Note that the input checking only needs to ensure whole value inputs,
+% the actual value range is checked solely by matEspresso.
+if islogical(arr) || isinteger(arr)
+	out = int8(arr);
+elseif isfloat(arr)
+	assert(all(fix(arr(:))==arr(:)),...
+		sprintf('SC:matEspressoGUI:%sIn:NotWholeNumbers',pfx),...
+		'The elements of <%sIn> must be whole numbers only.',pfx)
 	out = int8(arr);
 elseif istable(arr)
 	assert(all(varfun(@(x)isnumeric(x)||islogical(x), arr, 'OutputFormat','uniform')),...
 		sprintf('SC:matEspressoGUI:%sIn:ColumnNotNumericNorLogical',pfx),...
 		'Table variable has wrong type.\nAll variables of table <%sIn> must be numeric or logical',pfx);
+	assert(all(varfun(@iscolumn, arr, 'OutputFormat','uniform')),...
+		sprintf('SC:matEspressoGUI:%sIn:TableVariableNotColumn',pfx),...
+		'Table variable has wrong size.\nAll variables of table <%sIn> must be column vectors.',pfx);
+	assert(all(varfun(@(x)all(fix(x)==x), arr, 'OutputFormat','uniform')),...
+		sprintf('SC:matEspressoGUI:%sIn:ColumnNotWholeNumbers',pfx),...
+		'Table contains fractional values.\nThe table <%sIn> must consist of whole numbers only.',pfx);
 	out = table2array(varfun(@int8, arr, 'OutputFormat','table'));
 else
 	error(sprintf('SC:matEspressoGUI:%sIn:NotNumericNorTable',pfx),...

@@ -99,7 +99,7 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %          - <tt> = numeric/logical -> int8 matrix  (values 0, 1, 2)
 %          Each row of <Bins> represents one product term. Columns are
 %          ordered MSB-to-LSB from left to right, and correspond directly
-%          to the indepent variable names used in <expr>.
+%          to the independent-variable names used in <expr>.
 %          nTerms = number of product terms in the minimized expression,
 %          note that nTerms is 0 when the function is constant false.
 %   inps = Double scalar, the gate complexity of the minimized function.
