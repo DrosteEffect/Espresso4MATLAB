@@ -217,10 +217,14 @@ ttTxt(ttNum==2) = '-';
 %
 if ttLen>1
 	%
-	[~,~,expr,debug] = matEspresso(dec2bin(0:ttLen-1,ttPwr), ttTxt(:), opts);
+	% Expand every row! False values are part of the user's specification
+	% and must be passed explicitly. Selecting only non-zero values
+	% changes the treatment of DCs and is not semantically equivalent.
 	%
+	[~,~,expr,debug] = matEspresso(dec2bin(0:ttLen-1,ttPwr), ttTxt(:), opts);
 	indOut = debug.raw.indOut;
 	nTerms = size(indOut,1);
+	%
 else
 	switch ttNum
 		case 0 % tt='0': constant false function
@@ -254,34 +258,15 @@ if ttPwr>0 && nTerms>0
 	revPwr = ttPwr-1:-1:0;
 	revBit = 2.^revPwr(:);
 	for ii = 1:nTerms
-	    indRow = indOut(ii,:);
-	    oneIdx = (indRow==1) * revBit;
-	    twoIdx = 0;
+		indRow = indOut(ii,:);
+		oneIdx = (indRow==1) * revBit;
+		twoIdx = 0;
 		tmpIdx = reshape(find(indRow==2),1,[]);
-	    for jj = tmpIdx(end:-1:1)
-	        twoIdx(end+1:2*end) = twoIdx + revBit(jj);
-	    end
-	    Nums{ii} = oneIdx+twoIdx;
+		for jj = tmpIdx(end:-1:1)
+			twoIdx(end+1:2*end) = twoIdx + revBit(jj);
+		end
+		Nums{ii} = oneIdx+twoIdx;
 	end
-	% Original:
-	% rVec = 0:ttLen-1;
-	% tVec = uint64(rVec(:));
-	% allX = zeros(ttLen,ttPwr,'int8');
-	% for bit = ttPwr:-1:1 % (LSB):-1:(MSB)
-	% 	allX(:,bit) = bitand(tVec,1)~=0;
-	% 	tVec = bitshift(tVec,-1);
-	% end
-	% for ii = 1:nTerms
-	% 	indRow = indOut(ii,:);
-	% 	tmpVec = true(ttLen,1);
-	% 	for jj = 1:ttPwr
-	% 		if indRow(jj)~=2
-	% 			tmpVec = tmpVec & allX(:,jj)==indRow(jj);
-	% 		end
-	% 	end
-	% 	idx = find(tmpVec)-1;
-	% 	Nums{ii} = idx.';
-	% end
 else
 	for ii = 1:nTerms
 		Nums{ii} = 0;
