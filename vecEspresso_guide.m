@@ -310,7 +310,8 @@ tt = '011-01-0';
 %
 % |vecEspresso| can process larger problems that would be impractical
 % |minTruthtable|, but |vecEspresso| handles them efficiently using
-% |Espresso|'s heuristic algorithms.
+% |Espresso|'s heuristic algorithms. However, |vecEspresso| does construct
+% the entire binary truth table and thus is intended for dense vectors.
 %
 % For example, a 17-independent-variable truth-table (131072 elements):
 %

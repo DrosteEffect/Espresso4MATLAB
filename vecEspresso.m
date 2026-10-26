@@ -49,29 +49,26 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %   % With exact minimization (matEspresso option):
 %   >> [Bins,inps,Nums] = vecEspresso('1-11-000', 'Dexact',true)
 %   Bins =
-%       '01-'
-%       '0-0'
+%       '0--'
 %   inps =
-%       6
+%       0
 %   Nums =
-%       {[2,3]
-%        [0,2]}
+%       {[0,1,2,3]}
 %
 %   % Don't-cares in output:
 %   >> [~,~,~,ott] = vecEspresso('----1111')
-%   ott = '00001111'
+%   ott = '11111111'
 %   >> [~,~,~,ott] = vecEspresso('----1111', 'preserveDC',true)
 %   ott = '----1111'
 %
 %   % String input/output:
 %   >> [Bins,~,~,ott,expr] = vecEspresso("1--01100")
 %   Bins =
-%       "-00"
-%       "10-"
+%       "-0-"
 %   ott =
-%       "10001100"
+%       "11001100"
 %   expr =
-%       "Z = (~B & ~C) | (A & ~B)"
+%       "Z = ~B"
 %
 %% Input Arguments (**==default) %%
 %

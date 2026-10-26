@@ -30,7 +30,7 @@ This project exposes Espresso's minimization capabilities to MATLAB users while 
 
 ## Requirements ##
 
-- MATLAB R2008b or later
+- MATLAB R2009b or later
 - An installed **Espresso** executable available on the system path
   - Reference implementation: <https://github.com/Gigantua/Espresso>
 
@@ -48,79 +48,90 @@ To avoid confusing conflicts with existing MATLAB terminology we define:
 
 ## Examples `matEspresso` ##
 
-Minimize one dependent-variable (`Z`) with three independent-variables (`A`, `B`, `C`):
+Minimize one dependent-variable with three independent-variables:
 
-    >> indIn = [0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1];
-    >> [indOut,depOut,expr] = matEspresso(indIn)
-    indOut =
-          1     2     2
-          2     1     2
-    depOut =
-          1
-          1
-    expr =
-         'Z = A | B'
-    
-Minimize two dependent-variables (`hello`, `world`) with two independent-variables (`A`, `B`):
+```
+>> indIn = [0,1,0; 0,1,1; 1,0,0; 1,0,1; 1,1,0; 1,1,1];
+>> [indOut,depOut,expr] = matEspresso(indIn)
+indOut =
+     1     2     2
+     2     1     2
+depOut =
+     1
+     1
+expr =
+    'Z = A | B'
+```
 
-    >> indIn = [0 0; 0 1; 1 0; 1 1];
-    >> depIn = [0 0; 0 1; 1 0; 1 1];
-    >> [indOut,depOut,expr] = matEspresso(indIn, depIn, 'depNames',{'hello','world'})
-    indOut =
-          1     2
-          2     1
-    depOut =
-          1     0
-          0     1
-    expr =
-         'hello = A
-          world = B'
-    
-Simplify/factorize one dependent-variable (`Z`) with three independent-variables (`A`, `B`, `C`):
+Minimize two dependent-variables with two independent-variables:
 
-    >> indIn = [1 1 0; 1 0 1; 0 1 1];
-    >> [~,~,expr] = matEspresso(indIn)
-    expr =
-         'Z = (A & B & ~C) | (A & ~B & C) | (~A & B & C)'
-    >> [~,~,expr] = matEspresso(indIn, 'simplify',true)
-    expr =
-         'Z = A & (~B | ~C) & (B | C) | ~A & B & C'
+```
+>> indIn = [0,0; 0,1; 1,0; 1,1];
+>> depIn = [0,0; 0,1; 1,0; 1,1];
+>> [indOut,depOut,expr] = matEspresso(indIn, depIn, 'depNames',{'hello','world'})
+indOut =
+     1     2
+     2     1
+depOut =
+     1     0
+     0     1
+expr =
+    'hello = A
+     world = B'
+```
+
+Simplify/factorize one dependent-variable with three independent-variables:
+
+```
+>> indIn = [1,1,0; 1,0,1; 0,1,1];
+>> [~,~,expr] = matEspresso(indIn)
+expr =
+    'Z = (A & B & ~C) | (A & ~B & C) | (~A & B & C)'
+>> [~,~,expr] = matEspresso(indIn,[], 'simplify',true)
+expr =
+    'Z = A & (B & ~C | ~B & C) | ~A & B & C'
+```
 
 ## Examples `vecEspresso` ##
 
 Basic minimization:
 
-    >> Bins = vecEspresso('00111100')
-    Bins =
-        '10-'
-        '01-'
+```
+>> Bins = vecEspresso('00111100')
+Bins =
+   '10-'
+   '01-'
+```
 
-With exact minimization (`matEspresso` options):
+With exact minimization (matEspresso option):
 
-    >> [Bins,inps,Nums] = vecEspresso('1-11-000', 'Dexact',true)
-    Bins =
-        '01-'
-        '0-0'
-    inps =
-        6
-    Nums =
-        {[2,3]
-         [0,2]}
+```
+>> [Bins,inps,Nums] = vecEspresso('1-11-000', 'Dexact',true)
+Bins =
+   '0--'
+inps =
+   0
+Nums =
+   {[0,1,2,3]}
+```
 
 Don't-cares in output:
 
-    >> [~,~,~,ott] = vecEspresso('----1111')
-    ott = '00001111'
-    >> [~,~,~,ott] = vecEspresso('----1111', 'preserveDC',true)
-    ott = '----1111'
+```
+>> [~,~,~,ott] = vecEspresso('----1111')
+ott = '11111111'
+>> [~,~,~,ott] = vecEspresso('----1111', 'preserveDC',true)
+ott = '----1111'
+```
 
 String input/output:
 
-    >> [Bins,~,~,ott,expr] = vecEspresso("1--01100")
-    Bins = 
-        "-00"
-        "10-"
-    ott = 
-        "10001100"
-    expr =
-        "Z = (~B & ~C) | (A & ~B)"
+```
+>> [Bins,~,~,ott,expr] = vecEspresso("1--01100")
+Bins =
+   "-0-"
+ott =
+   "11001100"
+expr =
+   "Z = ~B"
+```

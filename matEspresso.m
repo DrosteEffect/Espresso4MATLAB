@@ -151,7 +151,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %
 %% Dependencies %%
 %
-% * MATLAB R2008b or later.
+% * MATLAB R2009b or later.
 % * Symbolic Math Toolbox iff using the <simplify> option.
 % * Espresso executable is on the MATLAB search path, or on the
 %   system PATH, or its location is specified via <exePath> option.
@@ -167,6 +167,7 @@ otyp = 'int8';
 % R2013b  | table class, array2table varfun table2array  [only if supplied]
 % R2013b  | categorical class                            [only if supplied]
 % R2010b  | iscolumn                               [only if table supplied]
+% R2009b  | tilde argument placeholder
 % R2008b  | id=tic(); ... toc(id);
 % R2008a  | assert(cond, msgID, msg, printf format string)
 % R2007b  | regexp: cell-array-of-char, split option, tokens & ones outputs
@@ -399,9 +400,9 @@ else
 	indOut(indChar=='-') = 2; % don't care (DC).
 	depOut(depChar=='-') = 2; % don't care (DC).
 	depOut(depChar=='~') = 5; % not applicable (NA). Tilde '~' appears in
- 	% dependent-variable output columns when <Eout> combines 'f' with other
- 	% sets (fd/fr/fdr). Espresso uses tilde to indicate that a covering
- 	% pattern does not contribute to a particular dependent-variable.
+	% dependent-variable output columns when <Eout> combines 'f' with other
+	% sets (fd/fr/fdr). Espresso uses tilde to indicate that a covering
+	% pattern does not contribute to a particular dependent-variable.
 end
 %
 debug.raw.indOut = indOut;
@@ -483,6 +484,9 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%mePrintf
 function out = meCategorical2Matrix(pfx,inp,isx)
+assert(~any(isundefined(inp(:))),...
+	sprintf('SC:matEspresso:%sIn:UndefinedCategory',pfx),...
+	'Input <%sIn> must contain only defined categories.',pfx)
 two = {'2','-','?','dc','dontcare','maybe'};
 c01 = {'0','off','no','false','1','on','yes','true','3','4','5','~','na','notapplicable'};
 v01 = [  0,    0,   0,      0,  1,   1,    1,     1,  3,  4,  5,  5,   5,              5];
@@ -678,6 +682,12 @@ if isempty(exe) % Search the MATLAB Search Path
 	else % Assume executable is on the System Path
 		exe = fnm;
 	end
+else
+	assert(isempty(regexp(exe,'["`$\\%!\r\n]','once')),...
+		'SC:matEspresso:exePath:UnsafeCharacter',...
+		['Option <exePath> must not contain double quotes, backticks,\n',...
+		'dollar signs, backslashes, percent signs, exclamation marks,\n',...
+		'or newline characters.']);
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meFindEspresso

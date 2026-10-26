@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>vecEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-10-20">
+<meta name="DC.date" content="2026-10-26">
 <meta name="DC.source" content="vecEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -441,9 +441,9 @@ debug.time <span class="comment">% Timing information</span>
 ans = 
   struct with fields:
 
-       Espresso: 0.05244
-    matEspresso: 0.055163
-    vecEspresso: 0.056961
+       Espresso: 0.20617
+    matEspresso: 0.21572
+    vecEspresso: 0.2229
 </pre>
 <h2 id="16">Interesting Edge-Cases</h2>
 <pre class="codeinput">[~,~,~,ott] = vecEspresso(<span class="string">'1111'</span>) <span class="comment">% Constant-true function, output remains true</span>
@@ -648,7 +648,7 @@ ottE =
 </pre>
 <h2 id="20">Example: Large Truth-Table Performance</h2>
 <p>
-<tt>vecEspresso</tt> can process larger problems that would be impractical <tt>minTruthtable</tt>, but <tt>vecEspresso</tt> handles them efficiently using <tt>Espresso</tt>'s heuristic algorithms.</p>
+<tt>vecEspresso</tt> can process larger problems that would be impractical <tt>minTruthtable</tt>, but <tt>vecEspresso</tt> handles them efficiently using <tt>Espresso</tt>'s heuristic algorithms. However, <tt>vecEspresso</tt> does construct the entire binary truth table and thus is intended for dense vectors.</p>
 <p>For example, a 17-independent-variable truth-table (131072 elements):</p>
 <pre class="codeinput">tt = repmat(<span class="string">'0'</span>, 1, 2^17); <span class="comment">% 17 independent-variables</span>
 tt([1, 123, 1234, 12345, 54321]) = <span class="string">'1'</span>;  <span class="comment">% 5 true minterms</span>
@@ -656,7 +656,7 @@ tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc
 </pre>
-<pre class="codeoutput">Elapsed time is 1.413649 seconds.
+<pre class="codeoutput">Elapsed time is 2.328219 seconds.
 </pre>
 <p class="footer">
 <br>
@@ -978,7 +978,8 @@ tt = '011-01-0';
 %
 % |vecEspresso| can process larger problems that would be impractical
 % |minTruthtable|, but |vecEspresso| handles them efficiently using
-% |Espresso|'s heuristic algorithms.
+% |Espresso|'s heuristic algorithms. However, |vecEspresso| does construct
+% the entire binary truth table and thus is intended for dense vectors.
 %
 % For example, a 17-independent-variable truth-table (131072 elements):
 %
