@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>matEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-10-26">
+<meta name="DC.date" content="2026-10-28">
 <meta name="DC.source" content="matEspresso_guide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -157,8 +157,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </ul>
 </div>
 <h2 id="3">Only <tt>indIn</tt> Argument</h2>
-<p>With one input argument <tt>indIn</tt> is interpreted as the <b>true cases</b> for a single implicit dependent-variable, i.e. each row of <tt>indIn</tt> is a minterm where the dependent-variable is true (any missing rows are implicitly false cases). Each column of <tt>indIn</tt> represents one independent-variable.</p>
-<p>The output values are <tt>0</tt>=false, <tt>1</tt>=true, <tt>2</tt>=don't-care (DC), and <tt>5</tt>=not applicable (NA).</p>
+<p>With one input argument <tt>indIn</tt> is interpreted as the <b>true cases</b> for a single implicit dependent-variable, i.e. each row of <tt>indIn</tt> specifies the independent-variable values for which the dependent-variable is true. Don't care (DC) values may be used to combine several true cases into one row. Any combinations of independent-variables that are not specified by the rows of <tt>indIn</tt> are implicitly false cases.</p>
+<p>Each column of <tt>indIn</tt> represents one independent variable.</p>
+<p>The <tt>indOut</tt> values are <tt>0</tt>=false, <tt>1</tt>=true, and <tt>2</tt>=don't-care (DC).</p>
 <p>For example two independent-variables and one (implicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [true,false; true,true]
 indOut = matEspresso(indIn)
@@ -172,7 +173,8 @@ indOut =
    1   2
 </pre>
 <h2 id="4">Both <tt>indIn</tt> and <tt>depIn</tt> Arguments</h2>
-<p>With two input arguments, <tt>depIn</tt> explicitly defines the required true/false/DC/NA values for each row of the truth table. Note that <tt>indIn</tt> and <tt>depIn</tt> must have the same number of rows. Each column of <tt>indIn</tt> represents one independent-variable, whereas each column of <tt>depIn</tt> represents one dependent-variable.</p>
+<p>With two input arguments, <tt>depIn</tt> explicitly defines the required true/false/DC/NA values for each dependent-variable. Its rows correspond exactly to the rows of independent-variables specified in <tt>indIn</tt>. Note that <tt>indIn</tt> and <tt>depIn</tt> must have the same number of rows.</p>
+<p>Each column of <tt>indIn</tt> represents one independent-variable, whereas each column of <tt>depIn</tt> represents one dependent-variable.</p>
 <p>For example two independent-variables and one (explicit) dependent-variable:</p>
 <pre class="codeinput">indIn = [true,false; true,true; false,true; false,false]
 depIn = [true; true; false; false]
@@ -195,7 +197,7 @@ indOut =
    1   2
 </pre>
 <h2 id="5">Input Arguments: Numeric</h2>
-<p>The above example use logical matrices for <tt>indIn</tt>, but for extra control and versatility <tt>indIn</tt> supports several other input classes.</p>
+<p>The above examples use logical matrices for <tt>indIn</tt>, but for extra control and versatility <tt>indIn</tt> supports several other input classes.</p>
 <p>A numeric <tt>indIn</tt> matrix supports the following three values:</p>
 <pre class="language-matlab">false: 0
  true: 1
@@ -340,7 +342,7 @@ indOut =
 <p>The <tt>Espresso</tt> options are intentionally exposed only at a high level. For advanced <tt>Espresso</tt> configuration, consider post-processing the PLA yourself, or extending the wrapper, or calling Espresso directly.</p>
 <h2 id="10">Output 1: <tt>indOut</tt>
 </h2>
-<p>A simplified set of cover patterns over the independent-variables. Each row represents one implicant/pattern. The output type matches the input type where practical:</p>
+<p>A simplified set of product terms over the independent-variables. Each row represents one product term, aka `AND` gate. The output type matches the input type where practical:</p>
 <div>
 <ul>
 <li>input numeric/logical matrix -&gt; output <tt>int8</tt> matrix (using values 0, 1, &amp; 2),</li>
@@ -352,7 +354,7 @@ indOut =
 <p>The above examples show <tt>indOut</tt> output.</p>
 <h2 id="11">Output 2: <tt>depOut</tt>
 </h2>
-<p>A matrix/table of the same row count as <tt>indOut</tt> indicating which patterns cover which dependent-variables. <tt>depOut</tt> returns the same classes and values as <tt>indOut</tt> described above, plus additionally the value 5/~/NA (for not applicable from <tt>depIn</tt> ).</p>
+<p>A matrix/table of the same row count as <tt>indOut</tt> indicating which product terms contribute to which dependent-variables. <tt>depOut</tt> returns the same classes and values as <tt>indOut</tt> described above. When <tt>Eout</tt> combines the true-set with the DC-set or false-set, <tt>depOut</tt> can additionally contain 5/~/NA, indicating that the returned product term does not participate in that dependent-variable for that output set.</p>
 <p>Note: If multiple dependent-variables are detected but you request only one output argument then <tt>matEspresso</tt> issues a warning!</p>
 <pre class="codeinput">indIn = [1,2,1; 1,1,0; 0,0,1]
 depIn = [1,0; 0,1; 0,2]
@@ -377,8 +379,8 @@ depOut =
 </pre>
 <h2 id="12">Output 3: <tt>expr</tt>
 </h2>
-<p>A character vector containing one Boolean expression per dependent-variable, separated by newlines. Expressions use MATLAB logical syntax: <tt>~</tt> (NOT), <tt>&amp;</tt> (AND), and | (OR). The independent-variable and dependent-variable names are obtained from either table columns/variables, or from options <tt>indNames</tt> &amp; <tt>depNames</tt>, or are generated automagically.</p>
-<p>Only those rows whose corresponding <tt>depOut</tt> values are true contribute to the expressions. Rows whose <tt>depOut</tt> values are all false, DC, or NA are ignored. Therefore if option <tt>Eout</tt> does not contain <tt>'f'</tt> then the expression is constant false, regardless of the input values.</p>
+<p>A character vector containing one Boolean expression per dependent-variable, separated by newlines. Expressions use MATLAB logical syntax: <tt>~</tt> `NOT`, <tt>&amp;</tt> `AND`, and | `OR`. The independent-variable and dependent-variable names are obtained from either table columns/variables, or from options <tt>indNames</tt> &amp; <tt>depNames</tt>, or are generated automagically.</p>
+<p>Only those rows whose corresponding <tt>depOut</tt> values are true contribute to the expressions. Rows whose <tt>depOut</tt> values are all false, DC, or NA are ignored. The default option <tt>Eout='f'</tt> means that <tt>expr</tt> contains the minimized true-set expressions. If another output set is requested, <tt>expr</tt> is formed from the rows where <tt>depOut</tt> is true.</p>
 <pre class="codeinput">[~,~,expr] = matEspresso(indIn,depIn)
 </pre>
 <pre class="codeoutput">expr =
@@ -428,8 +430,8 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.14164
-    matEspresso: 0.15035
+       Espresso: 0.050658
+    matEspresso: 0.05433
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
@@ -499,12 +501,15 @@ ans =
 %% Only |indIn| Argument
 %
 % With one input argument |indIn| is interpreted as the *true cases* for a
-% single implicit dependent-variable, i.e. each row of |indIn| is a minterm
-% where the dependent-variable is true (any missing rows are implicitly
-% false cases). Each column of |indIn| represents one independent-variable.
+% single implicit dependent-variable, i.e. each row of |indIn| specifies
+% the independent-variable values for which the dependent-variable is true.
+% Don't care (DC) values may be used to combine several true cases into one
+% row. Any combinations of independent-variables that are not specified by
+% the rows of |indIn| are implicitly false cases.
 %
-% The output values are |0|=false, |1|=true, |2|=don't-care (DC), and
-% |5|=not applicable (NA).
+% Each column of |indIn| represents one independent variable.
+%
+% The |indOut| values are |0|=false, |1|=true, and |2|=don't-care (DC).
 %
 % For example two independent-variables and one (implicit) dependent-variable:
 indIn = [true,false; true,true]
@@ -512,8 +517,10 @@ indOut = matEspresso(indIn)
 %% Both |indIn| and |depIn| Arguments
 %
 % With two input arguments, |depIn| explicitly defines the required
-% true/false/DC/NA values for each row of the truth table.
+% true/false/DC/NA values for each dependent-variable. Its rows correspond
+% exactly to the rows of independent-variables specified in |indIn|.
 % Note that |indIn| and |depIn| must have the same number of rows.
+%
 % Each column of |indIn| represents one independent-variable, whereas
 % each column of |depIn| represents one dependent-variable.
 %
@@ -523,7 +530,7 @@ depIn = [true; true; false; false]
 indOut = matEspresso(indIn,depIn)
 %% Input Arguments: Numeric
 %
-% The above example use logical matrices for |indIn|, but for extra
+% The above examples use logical matrices for |indIn|, but for extra
 % control and versatility |indIn| supports several other input classes.
 %
 % A numeric |indIn| matrix supports the following three values:
@@ -627,8 +634,8 @@ indOut = matEspresso(indIn,depIn)
 %
 %% Output 1: |indOut|
 %
-% A simplified set of cover patterns over the independent-variables.
-% Each row represents one implicant/pattern.
+% A simplified set of product terms over the independent-variables.
+% Each row represents one product term, aka `AND` gate.
 % The output type matches the input type where practical:
 %
 % * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, & 2),
@@ -641,9 +648,11 @@ indOut = matEspresso(indIn,depIn)
 %% Output 2: |depOut|
 %
 % A matrix/table of the same row count as |indOut| indicating which
-% patterns cover which dependent-variables.
-% |depOut| returns the same classes and values as |indOut| described above,
-% plus additionally the value 5/~/NA (for not applicable from |depIn| ).
+% product terms contribute to which dependent-variables. |depOut|
+% returns the same classes and values as |indOut| described above.
+% When |Eout| combines the true-set with the DC-set or false-set, |depOut|
+% can additionally contain 5/~/NA, indicating that the returned product
+% term does not participate in that dependent-variable for that output set.
 %
 % Note: If multiple dependent-variables are detected but you request only
 % one output argument then |matEspresso| issues a warning!
@@ -655,14 +664,15 @@ depIn = [1,0; 0,1; 0,2]
 %
 % A character vector containing one Boolean expression per
 % dependent-variable, separated by newlines. Expressions use MATLAB logical
-% syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
+% syntax: |~| `NOT`, |&| `AND`, and | `OR`. The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
 %
 % Only those rows whose corresponding |depOut| values are true contribute
 % to the expressions. Rows whose |depOut| values are all false, DC, or NA
-% are ignored. Therefore if option |Eout| does not contain |'f'| then
-% the expression is constant false, regardless of the input values.
+% are ignored. The default option |Eout='f'| means that |expr| contains
+% the minimized true-set expressions. If another output set is requested,
+% |expr| is formed from the rows where |depOut| is true.
 %
 [~,~,expr] = matEspresso(indIn,depIn)
 %% Output 4: |debug|

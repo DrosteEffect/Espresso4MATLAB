@@ -15,6 +15,7 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 % returning covering patterns and a minimized truth-vector. It provides
 % very good compatibility with minTruthtable's core functionality while
 % leveraging Espresso's efficient algorithms. However, results may differ!
+% The first four outputs are broadly compatible with minTruthtable.
 %
 %% Terminology %%
 %
@@ -72,7 +73,7 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %
 %% Input Arguments (**==default) %%
 %
-%   tt = Truth-vector (row vector of length 2^N) representing a Boolean
+%   tt = Truth-vector (vector of length 2^N) representing a Boolean
 %        function over N independent-variables. The input <tt> can be:
 %        - Char vector or string scalar, which contains only the following
 %          characters: '0' (false), '1' (true), '2'/'-'/'?' (don't-care,DC).
@@ -84,8 +85,9 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %        column 1 is A, column 2 is B, column 3 is C, etc.
 %   <options> = Name-value pairs controlling minimization behavior:
 %        'preserveDC' = logical scalar where:
-%        - false**: DCs are consumed (output contains only true & false)
-%        - true   : DCs preserved in output where input had them
+%            - false**: DCs are consumed (output contains only true & false),
+%            - true   : DCs preserved in output where input had them.
+%            This option does not affect minimization or <Bins> or <Nums>.
 %        All other options are passed to matEspresso.
 %
 %% Output Arguments %%
@@ -99,24 +101,26 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 %          to the independent-variable names used in <expr>.
 %          nTerms = number of product terms in the minimized expression,
 %          note that nTerms is 0 when the function is constant false.
-%   inps = Double scalar, the gate complexity of the minimized function.
-%          Counts literals in multi-literal product terms (AND gate-inputs)
-%          plus one gate-input per product term for the OR gate (if there
-%          are 2 or more terms). Single-literal and constant functions
-%          contribute 0. Lower values indicate simpler logic circuits.
-%          Example: <tt>='0110' returns Z=(A&~B)|(~A&B) which has
-%          2+2 AND gate-inputs + 2 OR gate-inputs thus giving <inps>=6.
-%   Nums = nTerms-by-1 cell array of covered truth-table row indices.
-%          Each cell contains a 1-by-K double row vector of 0-based indices
-%          of the truth-table rows covered by the corresponding pattern.
-%          Example: {[2,3]} means the pattern covers rows 2 and 3 (0-indexed).
+%   inps = Double scalar using the same logical-complexity metric as
+%          |minTruthtable|: the gate-inputs of multi-literal `AND` gates
+%          plus one final `OR` gate-input per `AND` gate when two or more
+%          gates are required. Single-literal terms and constant functions
+%          contribute zero.
+%          Example: <tt>='0110' returns Z=(A&~B)|(~A&B) which has 2+2
+%          `AND` gate-inputs + 2 `OR` gate-inputs thus giving <inps>=6.
+%   Nums = nTerms-by-1 cell array. Nums{k} contains the zero-based
+%          truth-table indices covered by Bins(k,:), including covered
+%          DC indices. Add 1 when using these indices to index <tt>.
+%          Example: Nums{k}=[2,3] means that Bins(k,:) covers
+%          elements tt(3) and tt(4) using MATLAB one-based indexing.
 %   ott  = Minimized truth-vector, the class depends on <tt>:
-%          - <tt> = char            -> char vector   (values '0', '1')
-%          - <tt> = string          -> string scalar (values '0', '1')
-%          - <tt> = numeric/logical -> int8 vector   (values 0, 1)
-%          With preserveDC=true <ott> also retains DCs from the input.
+%          - <tt> = char            -> char vector,
+%          - <tt> = string          -> string scalar,
+%          - <tt> = numeric/logical -> int8 vector.
+%          By default the values are '0'/0 (false) and '1'/1 (true).
+%          When preserveDC=true then input DCs are returned as '-'/2 (DC).
 %   expr = Char vector (or string scalar if <tt> is string) containing one
-%          boolean expression per dependent-variable, separated by newlines.
+%          Boolean expression per dependent-variable, separated by newlines.
 %          Uses MATLAB syntax (~, &, |) with parenthesized product terms.
 %   debug = ScalarStruct containing detailed information about the run,
 %          including timing, raw PLA data, statistics, and options used.
