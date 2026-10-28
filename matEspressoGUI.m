@@ -3,7 +3,7 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 %
 % Interactive GUI for demonstrating MATESPRESSO truth-table minimization.
 % UITABLEs allow interactive input of independent/dependent-variable values,
-% which triggers updates of the output tables and boolean expression display.
+% which triggers updates of the output tables and Boolean expression display.
 %
 %%% Syntax %%%
 %
@@ -15,7 +15,8 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 %
 %% Input Arguments %%
 %
-% As per MATESPRESSO. Note that <indIn> and <depIn> must be numeric/table.
+% As per MATESPRESSO. Note that <indIn> and <depIn> may be numeric/logical
+% matrices or tables with numeric/logical columns/variables.
 % Note that table column/variable names are not preserved, as these may
 % change with user GUI interactions (e.g. by adding/removing columns).
 %
@@ -206,7 +207,7 @@ uoe.Layout.Row = 4;
 uoe.Layout.Column = [4,6];
 uoe.Editable = false;
 uoe.WordWrap = 'on';
-uoe.Tooltip = 'Minimized boolean expressions in MATLAB syntax';
+uoe.Tooltip = 'Minimized Boolean expressions in MATLAB syntax';
 fgc = uoe.FontColor;
 %
 %%% Output Sets

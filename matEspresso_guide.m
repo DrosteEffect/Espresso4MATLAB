@@ -43,12 +43,15 @@
 %% Only |indIn| Argument
 %
 % With one input argument |indIn| is interpreted as the *true cases* for a
-% single implicit dependent-variable, i.e. each row of |indIn| is a minterm
-% where the dependent-variable is true (any missing rows are implicitly
-% false cases). Each column of |indIn| represents one independent-variable.
+% single implicit dependent-variable, i.e. each row of |indIn| specifies
+% the independent-variable values for which the dependent-variable is true.
+% Don't care (DC) values may be used to combine several true cases into one
+% row. Any combinations of independent-variables that are not specified by
+% the rows of |indIn| are implicitly false cases.
 %
-% The output values are |0|=false, |1|=true, |2|=don't-care (DC), and
-% |5|=not applicable (NA).
+% Each column of |indIn| represents one independent variable.
+%
+% The |indOut| values are |0|=false, |1|=true, and |2|=don't-care (DC).
 %
 % For example two independent-variables and one (implicit) dependent-variable:
 indIn = [true,false; true,true]
@@ -56,8 +59,10 @@ indOut = matEspresso(indIn)
 %% Both |indIn| and |depIn| Arguments
 %
 % With two input arguments, |depIn| explicitly defines the required
-% true/false/DC/NA values for each row of the truth table.
+% true/false/DC/NA values for each dependent-variable. Its rows correspond
+% exactly to the rows of independent-variables specified in |indIn|.
 % Note that |indIn| and |depIn| must have the same number of rows.
+%
 % Each column of |indIn| represents one independent-variable, whereas
 % each column of |depIn| represents one dependent-variable.
 %
@@ -67,7 +72,7 @@ depIn = [true; true; false; false]
 indOut = matEspresso(indIn,depIn)
 %% Input Arguments: Numeric
 %
-% The above example use logical matrices for |indIn|, but for extra
+% The above examples use logical matrices for |indIn|, but for extra
 % control and versatility |indIn| supports several other input classes.
 %
 % A numeric |indIn| matrix supports the following three values:
@@ -171,8 +176,8 @@ indOut = matEspresso(indIn,depIn)
 %
 %% Output 1: |indOut|
 %
-% A simplified set of cover patterns over the independent-variables.
-% Each row represents one implicant/pattern.
+% A simplified set of product terms over the independent-variables.
+% Each row represents one product term, aka `AND` gate.
 % The output type matches the input type where practical:
 %
 % * input numeric/logical matrix -> output |int8| matrix (using values 0, 1, & 2),
@@ -185,9 +190,11 @@ indOut = matEspresso(indIn,depIn)
 %% Output 2: |depOut|
 %
 % A matrix/table of the same row count as |indOut| indicating which
-% patterns cover which dependent-variables.
-% |depOut| returns the same classes and values as |indOut| described above,
-% plus additionally the value 5/~/NA (for not applicable from |depIn| ).
+% product terms contribute to which dependent-variables. |depOut|
+% returns the same classes and values as |indOut| described above.
+% When |Eout| combines the true-set with the DC-set or false-set, |depOut|
+% can additionally contain 5/~/NA, indicating that the returned product
+% term does not participate in that dependent-variable for that output set.
 %
 % Note: If multiple dependent-variables are detected but you request only
 % one output argument then |matEspresso| issues a warning!
@@ -199,14 +206,15 @@ depIn = [1,0; 0,1; 0,2]
 %
 % A character vector containing one Boolean expression per
 % dependent-variable, separated by newlines. Expressions use MATLAB logical
-% syntax: |~| (NOT), |&| (AND), and | (OR). The independent-variable and
+% syntax: |~| `NOT`, |&| `AND`, and | `OR`. The independent-variable and
 % dependent-variable names are obtained from either table columns/variables,
 % or from options |indNames| & |depNames|, or are generated automagically.
 %
 % Only those rows whose corresponding |depOut| values are true contribute
 % to the expressions. Rows whose |depOut| values are all false, DC, or NA
-% are ignored. Therefore if option |Eout| does not contain |'f'| then
-% the expression is constant false, regardless of the input values.
+% are ignored. The default option |Eout='f'| means that |expr| contains
+% the minimized true-set expressions. If another output set is requested,
+% |expr| is formed from the rows where |depOut| is true.
 %
 [~,~,expr] = matEspresso(indIn,depIn)
 %% Output 4: |debug|

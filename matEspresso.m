@@ -13,9 +13,10 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %   matEspresso(indIn,depIn,<options>)
 %   [indOut,depOut,expr,debug] = matEspresso(...)
 %
-% When called with one argument <indIn> is interpreted as the true cases
-% for a single dependent-variable (each listed row represents a true case)
-% any other (not provided) row combinations are implicitly false cases.
+% When called with one argument <indIn> specifies the true cases for one
+% implicit dependent-variable (each row represents one true case) and any
+% other combinations (not provided rows) are implicitly false cases.
+%
 % The 2nd input <depIn> may be [] in order to use any optional arguments.
 %
 % When called with two arguments <indIn> contains all independent-variables
@@ -37,7 +38,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 % The following options are supported (**=default value):
 %
 % Field    | Permitted | Description:
-% Name:    | Values:   | (and where relevant also the Espresso <command>)
+% Name:    | Values:   | (and where relevant also the Espresso <-command>)
 % ---------|-----------|--------------------------------------------------------
 % exePath  | []**      | Path to the Espresso executable, char vector or
 %          | path text | string scalar (automagic detection if empty).
@@ -63,7 +64,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %          | true      | Use <-Dcheck> for consistency checking.
 % ---------|-----------|--------------------------------------------------------
 % Dexact   | false**   | Use heuristic minimization (faster).
-%          | true      | Use <-Dexact> for exact minimization (slower but optimal).
+%          | true      | Use <-Dexact> for exact two-level minimization (slower).
 % ---------|-----------|--------------------------------------------------------
 % Dopo     | false**   | No phase assignment optimization.
 %          | true      | Use <-Dopo> to enable phase assignment optimization.
@@ -75,8 +76,9 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %          | true      | Use <-efast> for fast mode (conflicts with Dexact=true).
 % ---------|-----------|--------------------------------------------------------
 % Eout     | 'f'**     | Output set <-o>: 'f' (true-set), 'd' (DC-set),
-%          | 'd', 'fr',| 'r' (false-set), or any combination in that order.
-%          | 'fdr', etc| Controls which covering patterns are returned.
+%          | 'd' |'fdr'| 'r' (false-set), or any combination in that order.
+%          | 'r' | 'dr'| Controls which covering patterns are returned.
+%          | 'fd'| 'fr'| Note that <expr> is formed from rows where depOut==true.
 % ---------|-----------|--------------------------------------------------------
 %
 % Note0: these may be string array or cell array of char vectors or char matrix.
@@ -126,7 +128,8 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %   depIn = Matrix (numeric/logical/categorical/char) or table (numeric
 %           columns/variables only) with dependent-variable data.
 %           Values must be: 0/false/off/no, 1/true/on/yes, 2/-/DC/? (don't-care),
-%           3 is an alias for 0, 4 is an alias for 1, 5/~/NA (not applicable).
+%           3 is an alias for 0, 4 is an alias for 1, and 5/~/NA means that
+%           the row does not participate in that dependent-variable.
 %           If omitted or [] then <depIn> implicitly consists of 1's only.
 %   options = ScalarStructure or name-value optional arguments as per the
 %           table shown in the Options section above.
@@ -137,15 +140,19 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 %            of simplified patterns over the independent-variables.
 %            Each row is a covering pattern with values 0/false, 1/true, 2/-/DC.
 %   depOut = Matrix (int8/categorical/char) or table (int8 variables)
-%            showing which patterns cover which dependent-variables.
-%            Each row is a covering pattern with values 0/false, 1/true, 2/-/DC.
-%            and (when option <Eout> combines 'f' with other sets) 5/~/NA.
-%   expr   = CharacterVector containing minimal Boolean expressions, one
-%            per dependent-variable, separated by newlines. Uses MATLAB
-%            syntax (~, &, |) with parenthesized product terms. Only rows
-%            with any <depOut>==true contribute to these expressions, rows
-%            with all <depOut>==false or DC or NA are ignored. Therefore if
-%            option <Eout> does not contain 'f' then <expr> is constant 0.
+%            showing which product terms contribute to which
+%            dependent-variables. Values are 0/false, 1/true, or 2/-/DC.
+%            When <Eout> combines the true-set with another output set the
+%            value 5/~/NA indicates that a returned product term does not
+%            participate in that dependent-variable for that output set.
+%   expr   = CharacterVector containing minimized Boolean expressions
+%            derived from the product terms returned by Espresso, one per
+%            dependent-variable, separated by newlines. Uses MATLAB syntax
+%            (~, &, |) with parenthesized product terms. For each
+%            dependent-variable rows where <depOut>==true contribute to
+%            the expression, rows where <depOut>=false/DC/NA are ignored.
+%            With the default <Eout>='f' these are the minimized true-set
+%            expressions.
 %   debug  = ScalarStruct containing detailed information about the run,
 %            including timing, raw PLA data, and options used.
 %
@@ -683,11 +690,10 @@ if isempty(exe) % Search the MATLAB Search Path
 		exe = fnm;
 	end
 else
-	assert(isempty(regexp(exe,'["`$\\%!\r\n]','once')),...
+	assert(isempty(regexp(exe,'["`$%!\r\n]','once')),...
 		'SC:matEspresso:exePath:UnsafeCharacter',...
 		['Option <exePath> must not contain double quotes, backticks,\n',...
-		'dollar signs, backslashes, percent signs, exclamation marks,\n',...
-		'or newline characters.']);
+		'dollar signs, percent signs, exclamation marks, or newline characters.']);
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%meFindEspresso

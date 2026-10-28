@@ -25,13 +25,13 @@ This project exposes Espresso's minimization capabilities to MATLAB users while 
 
 - `matEspresso.m`: core MATLAB wrapper for Espresso. Accepts independent/dependent-variable tables or matrices and returns minimized results.
 - `matEspressoGUI.m`: interactive GUI for exploring truth-table minimization using MATLAB `uitable` components.
-- `vecEspresso.m`: truth-vector interface built on top of `matEspresso`, largely compatible with `minTruthtable` while scaling better to larger problems.
+- `vecEspresso.m`: truth-vector interface built on top of `matEspresso`, largely compatible with [`minTruthtable`](https://www.mathworks.com/matlabcentral/fileexchange/37118) while also supporting larger problems.
 - `matEspresso_guide.m` & `vecEspresso_guide.m`: MATLAB `publish` documentation
 
 ## Requirements ##
 
 - MATLAB R2009b or later
-- An installed **Espresso** executable available on the system path
+- The **Espresso** executable available on the system path, on the MATLAB search path, or at a location specified using the `exePath` option.
   - Reference implementation: <https://github.com/Gigantua/Espresso>
 
 ## Terminology ##
@@ -43,12 +43,13 @@ To avoid confusing conflicts with existing MATLAB terminology we define:
 
 ## Notes ##
 
-- Espresso is a heuristic algorithm: results are typically near-optimal but not guaranteed to be globally minimal.
+- By default Espresso is a heuristic algorithm: results are typically near-optimal but not guaranteed to be globally minimal.
 - Results may differ from exhaustive methods (e.g. Quine–McCluskey, Karnaugh maps or exact minimizers), particularly for small problems.
+- The option `Dexact=true` requests Espresso's exact minimization mode: different exact minimizers may still return different equal-cost terms, especially when `tt` contains DC values.
 
 ## Examples `matEspresso` ##
 
-Minimize one dependent-variable with three independent-variables:
+Minimize one dependent-variable `Z` with three independent-variables `A`, `B`, `C`:
 
 ```
 >> indIn = [0,1,0; 0,1,1; 1,0,0; 1,0,1; 1,1,0; 1,1,1];
@@ -63,7 +64,7 @@ expr =
     'Z = A | B'
 ```
 
-Minimize two dependent-variables with two independent-variables:
+Minimize two dependent-variables `hello` & `world` with two independent-variables `A` & `B`:
 
 ```
 >> indIn = [0,0; 0,1; 1,0; 1,1];
@@ -80,7 +81,7 @@ expr =
      world = B'
 ```
 
-Simplify/factorize one dependent-variable with three independent-variables:
+Simplify/factorize one dependent-variable `Z` with three independent-variables `A`, `B`, `C`:
 
 ```
 >> indIn = [1,1,0; 1,0,1; 0,1,1];
@@ -103,7 +104,7 @@ Bins =
    '01-'
 ```
 
-With exact minimization (matEspresso option):
+With exact two-level minimization (`matEspresso` option `Dexact`). `'0--'` covers the truth-table indices 0:3, including the DC at index 1, without covering a specified false index. A single-literal term contributes zero to the `inps` metric defined and used by `minTruthtable`.
 
 ```
 >> [Bins,inps,Nums] = vecEspresso('1-11-000', 'Dexact',true)
