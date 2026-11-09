@@ -246,4 +246,4 @@ dbg.time
 % be numeric/logical matrices or tables with numeric/logical columns/variables
 % (categorical and character encodings are not accepted by the GUI).
 %
-matEspressoGUI([0,0;0,1;1,0;1,1],[0;0;0;1])
+matEspresso_GUI([0,0;0,1;1,0;1,1],[0;0;0;1])

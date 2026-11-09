@@ -9,8 +9,8 @@ To make changes, update the MATLAB code and republish this document.
 <title>matEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-10-28">
-<meta name="DC.source" content="matEspresso_guide.m">
+<meta name="DC.date" content="2026-11-09">
+<meta name="DC.source" content="matEspresso_UserGuide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
@@ -430,8 +430,8 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.050658
-    matEspresso: 0.05433
+       Espresso: 0.057247
+    matEspresso: 0.060068
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
@@ -446,9 +446,9 @@ ans =
 <tt>matEspressoGUI</tt> Interactive Demo</h2>
 <p>
 <tt>matEspressoGUI</tt> provides an interactive UI that calls <tt>matEspresso</tt> on every uitable edit. One key difference is that <tt>indIn</tt> and <tt>depIn</tt> must be numeric/logical matrices or tables with numeric/logical columns/variables (categorical and character encodings are not accepted by the GUI).</p>
-<pre class="codeinput">matEspressoGUI([0,0;0,1;1,0;1,1],[0;0;0;1])
+<pre class="codeinput">matEspresso_GUI([0,0;0,1;1,0;1,1],[0;0;0;1])
 </pre>
-<img vspace="5" hspace="5" src="matEspresso_guide_01.png" alt=""> <p class="footer">
+<img vspace="5" hspace="5" src="matEspresso_UserGuide_01.png" alt=""> <p class="footer">
 <br>
 <a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2025b</a>
 <br>
@@ -704,7 +704,7 @@ dbg.time
 % be numeric/logical matrices or tables with numeric/logical columns/variables
 % (categorical and character encodings are not accepted by the GUI).
 %
-matEspressoGUI([0,0;0,1;1,0;1,1],[0;0;0;1])
+matEspresso_GUI([0,0;0,1;1,0;1,1],[0;0;0;1])
 ##### SOURCE END #####
 -->
 </body>

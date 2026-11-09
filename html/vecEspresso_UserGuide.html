@@ -9,8 +9,8 @@ To make changes, update the MATLAB code and republish this document.
 <title>vecEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-10-28">
-<meta name="DC.source" content="vecEspresso_guide.m">
+<meta name="DC.date" content="2026-11-09">
+<meta name="DC.source" content="vecEspresso_UserGuide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
@@ -160,7 +160,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </ul>
 </div>
 <h2 id="2">Truth-Vector Format</h2>
-<p>A truth-vector is a vector of length <img src="vecEspresso_guide_eq18347343706772467662.png" alt="$2^N$" style="width:16px;height:13px;"> that specifies the dependent-variable value for every combination of <img src="vecEspresso_guide_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;"> independent- variables. Zero-based index <img src="vecEspresso_guide_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;"> gives the dependent-variable value (true, false, or don't-care/DC) when the independent-variables are the <img src="vecEspresso_guide_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;">-bit binary representation of <img src="vecEspresso_guide_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;">, in binary counting order.</p>
+<p>A truth-vector is a vector of length <img src="vecEspresso_UserGuide_eq18347343706772467662.png" alt="$2^N$" style="width:16px;height:13px;"> that specifies the dependent-variable value for every combination of <img src="vecEspresso_UserGuide_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;"> independent- variables. Zero-based index <img src="vecEspresso_UserGuide_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;"> gives the dependent-variable value (true, false, or don't-care/DC) when the independent-variables are the <img src="vecEspresso_UserGuide_eq05705075896852816573.png" alt="$N$" style="width:12px;height:10px;">-bit binary representation of <img src="vecEspresso_UserGuide_eq12829740475467572519.png" alt="$k$" style="width:8px;height:10px;">, in binary counting order.</p>
 <p>For example, a 4-element truth-vector has two independent-variables:</p>
 <pre class="language-matlab">tt = <span class="string">'1010'</span>                        tt <span class="string">&darr;</span>
 </pre>
@@ -443,9 +443,9 @@ debug.time <span class="comment">% Timing information</span>
 ans = 
   struct with fields:
 
-       Espresso: 0.05621
-    matEspresso: 0.05902
-    vecEspresso: 0.061062
+       Espresso: 0.051165
+    matEspresso: 0.053951
+    vecEspresso: 0.055568
 </pre>
 <h2 id="16">Interesting Edge-Cases</h2>
 <pre class="codeinput">[~,~,~,ott] = vecEspresso(<span class="string">'1111'</span>) <span class="comment">% Constant-true function, output remains true</span>
@@ -643,7 +643,7 @@ tic
 [Bins, inps, Nums, ott] = vecEspresso(tt);
 toc
 </pre>
-<pre class="codeoutput">Elapsed time is 1.432592 seconds.
+<pre class="codeoutput">Elapsed time is 1.491109 seconds.
 </pre>
 <p class="footer">
 <br>
