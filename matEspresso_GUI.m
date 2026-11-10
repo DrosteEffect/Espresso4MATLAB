@@ -1,4 +1,4 @@
-function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
+function [indOut,depOut,expr,debug] = matEspresso_GUI(indIn,depIn,varargin)
 % Interactive demonstration of MATESPRESSO truth-table minimization.
 %
 % Interactive GUI for demonstrating MATESPRESSO truth-table minimization.
@@ -7,11 +7,11 @@ function [indOut,depOut,expr,debug] = matEspressoGUI(indIn,depIn,varargin)
 %
 %%% Syntax %%%
 %
-%   matEspressoGUI()
-%   matEspressoGUI(indIn)
-%   matEspressoGUI(indIn,depIn)
-%   matEspressoGUI(indIn,depIn,<options>)
-%   [indOut,depOut,expr,debug] = matEspressoGUI(...)
+%   matEspresso_GUI()
+%   matEspresso_GUI(indIn)
+%   matEspresso_GUI(indIn,depIn)
+%   matEspresso_GUI(indIn,depIn,<options>)
+%   [indOut,depOut,expr,debug] = matEspresso_GUI(...)
 %
 %% Input Arguments %%
 %
@@ -91,7 +91,7 @@ if nargout
 end
 %
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspressoGUI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%matEspresso_GUI
 function [uif,svh,gvh] = megNewFig(out,args,opts)
 % Create the graphics objects. Define all callback functions in one workspace.
 %
@@ -283,7 +283,7 @@ svh = @megSetVals;
 				args{2}(:,src.Value+1:end) = [];
 				args{2}(:,end+1:src.Value) = 2;
 			otherwise
-				error('SC:matEspressoGUI:UnknownSpinnerTag',...
+				error('SC:matEspresso_GUI:UnknownSpinnerTag',...
 					'Please report this error: unknown spinner tag.')
 		end
 		megUpDate()
@@ -365,22 +365,22 @@ if islogical(arr) || isinteger(arr)
 	out = int8(arr);
 elseif isfloat(arr)
 	assert(all(fix(arr(:))==arr(:)),...
-		sprintf('SC:matEspressoGUI:%sIn:NotWholeNumbers',pfx),...
+		sprintf('SC:matEspresso_GUI:%sIn:NotWholeNumbers',pfx),...
 		'The elements of <%sIn> must be whole numbers only.',pfx)
 	out = int8(arr);
 elseif istable(arr)
 	assert(all(varfun(@(x)isnumeric(x)||islogical(x), arr, 'OutputFormat','uniform')),...
-		sprintf('SC:matEspressoGUI:%sIn:ColumnNotNumericNorLogical',pfx),...
+		sprintf('SC:matEspresso_GUI:%sIn:ColumnNotNumericNorLogical',pfx),...
 		'Table variable has wrong type.\nAll variables of table <%sIn> must be numeric or logical',pfx);
 	assert(all(varfun(@iscolumn, arr, 'OutputFormat','uniform')),...
-		sprintf('SC:matEspressoGUI:%sIn:TableVariableNotColumn',pfx),...
+		sprintf('SC:matEspresso_GUI:%sIn:TableVariableNotColumn',pfx),...
 		'Table variable has wrong size.\nAll variables of table <%sIn> must be column vectors.',pfx);
 	assert(all(varfun(@(x)all(fix(x)==x), arr, 'OutputFormat','uniform')),...
-		sprintf('SC:matEspressoGUI:%sIn:ColumnNotWholeNumbers',pfx),...
+		sprintf('SC:matEspresso_GUI:%sIn:ColumnNotWholeNumbers',pfx),...
 		'Table contains fractional values.\nThe table <%sIn> must consist of whole numbers only.',pfx);
 	out = table2array(varfun(@int8, arr, 'OutputFormat','table'));
 else
-	error(sprintf('SC:matEspressoGUI:%sIn:NotNumericNorTable',pfx),...
+	error(sprintf('SC:matEspresso_GUI:%sIn:NotNumericNorTable',pfx),...
 		'Input <%sIn> must be numeric, logical, or table type.',pfx)
 end
 end

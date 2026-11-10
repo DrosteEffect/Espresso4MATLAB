@@ -163,7 +163,7 @@ function [indOut,depOut,expr,debug] = matEspresso(indIn,depIn,opts,varargin)
 % * Espresso executable is on the MATLAB search path, or on the
 %   system PATH, or its location is specified via <exePath> option.
 %
-% See also MATESPRESSOGUI VECESPRESSO ONCLEANUP SIMPLIFY SYSTEM
+% See also MATESPRESSO_GUI VECESPRESSO ONCLEANUP SIMPLIFY SYSTEM
 % CATEGORICAL CATEGORIES ARRAY2TABLE TABLE2ARRAY ISVARNAME
 ticH = tic();
 fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));

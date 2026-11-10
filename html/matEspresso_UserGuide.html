@@ -9,7 +9,7 @@ To make changes, update the MATLAB code and republish this document.
 <title>matEspresso User Guide</title>
 <meta name="generator" content="MATLAB 25.2">
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.date" content="2026-11-09">
+<meta name="DC.date" content="2026-11-10">
 <meta name="DC.source" content="matEspresso_UserGuide.m">
 <style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
@@ -128,7 +128,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <a href="#14">Temporary File</a>
 </li>
 <li>
-<a href="#15"><tt>matEspressoGUI</tt> Interactive Demo</a>
+<a href="#15"><tt>matEspresso_GUI</tt> Interactive Demo</a>
 </li>
 </ul>
 </div>
@@ -430,8 +430,8 @@ ans =
 ans = 
   struct with fields:
 
-       Espresso: 0.057247
-    matEspresso: 0.060068
+       Espresso: 0.074959
+    matEspresso: 0.079265
 </pre>
 <h2 id="14">Temporary File</h2>
 <p>
@@ -443,9 +443,9 @@ ans =
 </ul>
 </div>
 <h2 id="15">
-<tt>matEspressoGUI</tt> Interactive Demo</h2>
+<tt>matEspresso_GUI</tt> Interactive Demo</h2>
 <p>
-<tt>matEspressoGUI</tt> provides an interactive UI that calls <tt>matEspresso</tt> on every uitable edit. One key difference is that <tt>indIn</tt> and <tt>depIn</tt> must be numeric/logical matrices or tables with numeric/logical columns/variables (categorical and character encodings are not accepted by the GUI).</p>
+<tt>matEspresso_GUI</tt> provides an interactive UI that calls <tt>matEspresso</tt> on every uitable edit. One key difference is that <tt>indIn</tt> and <tt>depIn</tt> must be numeric/logical matrices or tables with numeric/logical columns/variables (categorical and character encodings are not accepted by the GUI).</p>
 <pre class="codeinput">matEspresso_GUI([0,0;0,1;1,0;1,1],[0;0;0;1])
 </pre>
 <img vspace="5" hspace="5" src="matEspresso_UserGuide_01.png" alt=""> <p class="footer">
@@ -697,9 +697,9 @@ dbg.time
 % * Use option |rmTemp| to control if this file is automatically deleted or not.
 % * Get the filepath from the 4th output |debug.system.tempPLA|.
 %
-%% |matEspressoGUI| Interactive Demo
+%% |matEspresso_GUI| Interactive Demo
 %
-% |matEspressoGUI| provides an interactive UI that calls |matEspresso| on
+% |matEspresso_GUI| provides an interactive UI that calls |matEspresso| on
 % every uitable edit. One key difference is that |indIn| and |depIn| must
 % be numeric/logical matrices or tables with numeric/logical columns/variables
 % (categorical and character encodings are not accepted by the GUI).

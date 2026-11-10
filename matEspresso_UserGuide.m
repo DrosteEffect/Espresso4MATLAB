@@ -239,9 +239,9 @@ dbg.time
 % * Use option |rmTemp| to control if this file is automatically deleted or not.
 % * Get the filepath from the 4th output |debug.system.tempPLA|.
 %
-%% |matEspressoGUI| Interactive Demo
+%% |matEspresso_GUI| Interactive Demo
 %
-% |matEspressoGUI| provides an interactive UI that calls |matEspresso| on
+% |matEspresso_GUI| provides an interactive UI that calls |matEspresso| on
 % every uitable edit. One key difference is that |indIn| and |depIn| must
 % be numeric/logical matrices or tables with numeric/logical columns/variables
 % (categorical and character encodings are not accepted by the GUI).
