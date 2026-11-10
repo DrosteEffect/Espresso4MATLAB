@@ -3,10 +3,10 @@ function matEspresso_Test()
 %
 %% Dependencies %%
 % * MATLAB R2009b or later.
-% * matEspresso.m and test_flb_fun.m
+% * matEspresso.m and test_mat_fun.m
 %
-% See also MATESPRESSO TEST_FLB_FUN
-obj = test_flb_fun(@matEspresso);
+% See also MATESPRESSO TEST_MAT_FUN
+obj = test_mat_fun(@matEspresso);
 mainfun(obj) % count
 obj.start()
 mainfun(obj) % check

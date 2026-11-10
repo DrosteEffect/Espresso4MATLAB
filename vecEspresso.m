@@ -132,7 +132,8 @@ function [Bins,inps,Nums,ott,expr,debug] = vecEspresso(tt,opts,varargin)
 % * MATLAB R2009b or later.
 % * matEspresso.m from <https://www.mathworks.com/matlabcentral/fileexchange/183127>
 %
-% See also MATESPRESSO MATESPRESSO_GUI MINTRUTHTABLE DEC2BIN BIN2DEC
+% See also VECESPRESSO_TEST MATESPRESSO MATESPRESSO_GUI MINTRUTHTABLE
+% DEC2BIN BIN2DEC CHAR STRING
 ticH = tic();
 fErr = @(v)sprintf('%sand ''%c''',sprintf('''%c'', ',v(1:end-1)),v(end));
 % Release | Feature

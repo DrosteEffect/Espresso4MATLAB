@@ -1,4 +1,4 @@
-classdef test_flb_fun < handle
+classdef test_mat_fun < handle
 	% Class for comparing actual function output against expected output.
 	%
 	%% Dependencies %%
@@ -18,7 +18,7 @@ classdef test_flb_fun < handle
 		cntFlg = true; % count vs compare
 	end
 	methods
-		function obj = test_flb_fun(fnh) % constructor
+		function obj = test_mat_fun(fnh) % constructor
 			dbs = dbstack();
 			fmt = '%s|%3d:';
 			try %#ok<TRYNC> Octave
@@ -40,24 +40,7 @@ classdef test_flb_fun < handle
 				warning(txt)
 			end
 		end
-		function out = o(obj,varargin) % expected outputs
-			obj.outExp = varargin;
-			if nargout
-				out = obj;
-			else
-				obj.check();
-			end
-		end
-		function out = i(obj,varargin) % input arguments
-			obj.inpArg = varargin;
-			if nargout
-				out = obj;
-			else
-				obj.check();
-			end
-		end
 		function e(obj,erX) % expected error identifier
-			% Method e must be terminal and therefore returns no object.
 			assert(ischar(erX),'Expected error identifier must be a character row vector.')
 			if obj.cntFlg % count
 				obj.cntTot = obj.cntTot + 1;
@@ -84,6 +67,22 @@ classdef test_flb_fun < handle
 				obj.cntFld = obj.cntFld + boo;
 				obj.inpArg = {};
 				obj.outExp = {};
+			end
+		end
+		function out = i(obj,varargin) % input arguments
+			obj.inpArg = varargin;
+			if nargout
+				out = obj;
+			else
+				obj.check();
+			end
+		end
+		function out = o(obj,varargin) % expected outputs
+			obj.outExp = varargin;
+			if nargout
+				out = obj;
+			else
+				obj.check();
 			end
 		end
 		function start(obj) % start execution
@@ -140,7 +139,7 @@ classdef test_flb_fun < handle
 		end
 	end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%test_flb_fun
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%test_mat_fun
 function varargout = myWaitbar(varargin)
 % Protect against systems that do not support graphics, e.g. FEX.
 varargout = cell(1,nargout);

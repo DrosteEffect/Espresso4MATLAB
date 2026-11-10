@@ -3,10 +3,10 @@ function vecEspresso_Test()
 %
 %% Dependencies %%
 % * MATLAB R2009b or later.
-% * vecEspresso.m and test_flb_fun.m
+% * vecEspresso.m and test_mat_fun.m
 %
-% See also VECESPRESSO TEST_FLB_FUN
-obj = test_flb_fun(@vecEspresso);
+% See also VECESPRESSO TEST_MAT_FUN
+obj = test_mat_fun(@vecEspresso);
 mainfun(obj) % count
 obj.start()
 mainfun(obj) % check
